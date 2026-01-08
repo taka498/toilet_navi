@@ -1,3 +1,6 @@
+## 画面遷移図
+https://www.figma.com/design/Web49eeklU5QUiowlo5i3S/toilet_navi?node-id=0-1&p=f&t=24arYjDjTzOS5l81-0
+
 ## サービス概要
 
 本サービスは電車移動中に腹痛などの不調を感じ、移動は可能だが急いでトイレへ向かう必要がある状況にて、降車前の段階で、降車後に利用できる可能性のある駅のトイレ候補を提示することに特化したナビゲーションWebアプリです。
