@@ -1,5 +1,5 @@
 ## 画面遷移図
-https://www.figma.com/design/Web49eeklU5QUiowlo5i3S/toilet_navi?node-id=0-1&p=f&t=72fJy9OUDgMmpKPz-0
+https://www.figma.com/design/Web49eeklU5QUiowlo5i3S/toilet_navi?node-id=0-1&p=f&t=iS1GtdIAWvd2rGOZ-0
 
 ## サービス概要
 
