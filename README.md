@@ -1,3 +1,7 @@
+## ER図
+
+https://app.diagrams.net/#G1htqevGaUqzYYZvRR7wnlCsKtcMBxBidB#%7B%22pageId%22%3A%22R2lEEEUBdFMjLlhIrx00%22%7D
+
 ## 画面遷移図
 
 https://www.figma.com/design/Web49eeklU5QUiowlo5i3S/toilet_navi?node-id=0-1&p=f&t=VfoOsEXaebqvwJTg-0
