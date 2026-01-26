@@ -17,11 +17,11 @@ class FixStationsConstraints < ActiveRecord::Migration[8.0]
     change_column_null :stations, :longitude, false
 
     # --- 3) 重複防止（operator_name + name をユニーク） ---
-    add_index :stations, [:operator_name, :name], unique: true
+    add_index :stations, [ :operator_name, :name ], unique: true
   end
 
   def down
-    remove_index :stations, column: [:operator_name, :name]
+    remove_index :stations, column: [ :operator_name, :name ]
 
     change_column_null :stations, :longitude, true
     change_column_null :stations, :latitude, true
