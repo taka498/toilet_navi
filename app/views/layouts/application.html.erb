@@ -10,19 +10,50 @@
 
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
+    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
+    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
+
     <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <header class="site-header">
+      <div class="site-header__inner">
+        <div class="site-header__left">
+          <%= link_to "トイレナビ", root_path, class: "site-logo" %>
+        </div>
+
+        <!-- PC向けナビ（横並び） -->
+        <nav class="site-nav site-nav--desktop" aria-label="メインメニュー">
+          <%= link_to "お問い合わせ", contact_path, class: "site-nav__link" %>
+          <%= link_to "利用規約", terms_path, class: "site-nav__link" %>
+          <%= link_to "プライバシー", privacy_path, class: "site-nav__link" %>
+        </nav>
+
+        <!-- スマホ向け：ハンバーガー（detailsでJS不要） -->
+        <details class="site-nav site-nav--mobile">
+          <summary class="hamburger" aria-label="メニューを開く">
+            <span class="hamburger__bar"></span>
+            <span class="hamburger__bar"></span>
+            <span class="hamburger__bar"></span>
+          </summary>
+
+          <nav class="drawer" aria-label="メインメニュー（モバイル）">
+            <%= link_to "お問い合わせ", contact_path, class: "drawer__link" %>
+            <%= link_to "利用規約", terms_path, class: "drawer__link" %>
+            <%= link_to "プライバシー", privacy_path, class: "drawer__link" %>
+          </nav>
+        </details>
+      </div>
+    </header>   
+    <main class="site-main">
+      <%= yield %>
+    </main>
   </body>
 </html>
