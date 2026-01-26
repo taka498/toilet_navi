@@ -1,0 +1,32 @@
+# Dockerfile.dev
+FROM ruby:3.3.5-slim
+
+# 必要なパッケージをインストール
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    git \
+    libpq-dev \
+    libvips \
+    postgresql-client \
+    curl \
+    vim \
+    && rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+# 作業ディレクトリを設定
+WORKDIR /rails
+
+# GemfileとGemfile.lockをコピー
+COPY Gemfile Gemfile.lock ./
+
+# Bundlerをインストールしてgemをインストール
+RUN bundle install
+
+# アプリケーションのコードをコピー
+COPY . .
+
+# ポート3000を公開
+EXPOSE 3000
+
+# サーバーを起動
+CMD ["rails", "server", "-b", "0.0.0.0"]
