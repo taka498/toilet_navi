@@ -33,6 +33,8 @@ services:
     environment:
       DATABASE_URL: postgres://postgres:password@db:5432/toilet_navi_development
       RAILS_ENV: development
+    env_file:
+      - .env
 
 volumes:
   postgres_data:
