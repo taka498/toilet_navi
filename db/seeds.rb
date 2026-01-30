@@ -1,9 +1,23 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
+Station.where(operator_name: "JR東日本", name: "大宮駅").destroy_all
+
+station = Station.create!(
+  name: "大宮駅",
+  operator_name: "JR東日本",
+  latitude: 35.9066,
+  longitude: 139.6231
+)
+
+Toilet.where(station: station).destroy_all
+
+Toilet.create!(
+  station: station,
+  name: "テストトイレ",
+  latitude: 35.9069,
+  longitude: 139.6234,
+  is_wheelchair_accessible: true,
+  is_baby_friendly: true,
+  is_ostomate_accessible: false,
+  is_gender_separated: false,
+  is_multipurpose: false,
+  style_type: 2
+)

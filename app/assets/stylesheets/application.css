@@ -166,3 +166,55 @@
   }
 }
 
+/* --- Toilet list (Search page) --- */
+#toilet-list {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.toilet-card {
+  padding: 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  cursor: pointer;
+  background: #fff;
+}
+
+.toilet-card:hover {
+  background: #f7f7f7;
+}
+
+.toilet-card.is-selected {
+  background: #f2f6ff;
+  border-color: #b7ccff;
+}
+
+.toilet-card__title {
+  font-size: 12px;
+  opacity: 0.75;
+  margin-bottom: 6px;
+}
+
+.toilet-card__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.toilet-card__name {
+  font-weight: 600;
+}
+
+.toilet-card__icons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.facility-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
