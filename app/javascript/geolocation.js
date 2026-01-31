@@ -65,6 +65,13 @@ function setupGeolocationButton() {
     modalBackdrop.addEventListener("click", closeToiletModal);
   }
 
+  if (document.documentElement.dataset.toiletModalEscBound !== "true") {
+    document.documentElement.dataset.toiletModalEscBound = "true";
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeToiletModal();
+    });
+  }
+
   button.addEventListener("click", () => {
     result.textContent = "";
 
@@ -199,18 +206,30 @@ function renderToiletList(toilets) {
     item.innerHTML = `
       <div class="toilet-card__title">${escapeHtml(header)}</div>
       <div class="toilet-card__row">
-        <div class="toilet-card__name">${escapeHtml(toilet.name)}</div>
-        <div class="toilet-card__icons">${buildFacilityIconsHtml(toilet)}</div>
+        <div>
+          <div class="toilet-card__name">${escapeHtml(toilet.name)}</div>
+          <div class="toilet-card__icons">${buildFacilityIconsHtml(toilet)}</div>
+        </div>
+
+        <button type="button" class="toilet-card__detail" aria-label="詳細を開く">
+          ›
+        </button>
       </div>
-    `;
+   `;
 
     item.addEventListener("click", () => {
-      handleToiletSelect(toilet, {
-        lat: Number(toilet.latitude),
-        lng: Number(toilet.longitude),
-      });
+      handleToiletSelect(toilet, { lat: Number(toilet.latitude), lng: Number(toilet.longitude) });
     });
 
+    const detailBtn = item.querySelector(".toilet-card__detail");
+    if (detailBtn) {
+      detailBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectToilet(toilet);
+        map.panTo({ lat: Number(toilet.latitude), lng: Number(toilet.longitude) });
+        openToiletModal(toilet);
+      });
+    }
 
     list.appendChild(item);
   });
@@ -219,9 +238,9 @@ function renderToiletList(toilets) {
 }
 
 function selectToilet(toilet) {
-  selectedToiletId = toilet.id;
+  selectedToiletId = Number(toilet.id);
   applySelectedStyle();
-  highlightSelectedMarker(toilet.id);
+  highlightSelectedMarker(selectedToiletId);
 }
 
 function applySelectedStyle() {
@@ -256,47 +275,212 @@ function escapeHtml(str) {
   });
 }
 
-function handleToiletSelect(toilet, panTargetLatLng) {
-  const isSameToilet = selectedToiletId === toilet.id;
+function markOrUnknown(value) {
+  if (value === true) return "〇";
+  if (value === false) return "×";
+  return "—"; // 未登録(null/undefined)用
+}
 
-  // まずは選択状態を更新
+function handleToiletSelect(toilet, panTargetLatLng) {
+  // 選択状態を更新
   selectToilet(toilet);
 
   // 地図を中心へ
   if (panTargetLatLng) {
     map.panTo(panTargetLatLng);
   }
+}
 
-  // 同じトイレを「もう一度」選択したら詳細（モーダル）を開く
-  if (isSameToilet) {
-    openToiletModal(toilet);
+function closeToiletModal() {
+  const modal = document.getElementById("toilet-modal");
+  if (!modal) return;
+
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+}
+
+function setupToiletModalCloseEvents() {
+  const modalClose = document.getElementById("toilet-modal-close");
+  const modalBackdrop = document.getElementById("toilet-modal-backdrop");
+
+  if (modalClose && modalClose.dataset.bound !== "true") {
+    modalClose.dataset.bound = "true";
+    modalClose.addEventListener("click", closeToiletModal);
+  }
+
+  if (modalBackdrop && modalBackdrop.dataset.bound !== "true") {
+    modalBackdrop.dataset.bound = "true";
+    modalBackdrop.addEventListener("click", closeToiletModal);
+  }
+
+  if (document.documentElement.dataset.toiletModalEscBound !== "true") {
+    document.documentElement.dataset.toiletModalEscBound = "true";
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeToiletModal();
+    });
   }
 }
 
 function openToiletModal(toilet) {
   const modal = document.getElementById("toilet-modal");
   const modalBody = document.getElementById("toilet-modal-body");
-  if (!modal || !modalBody) {
-    // まだモーダルを作っていない場合に備えて落ちないように
-    return;
-  }
+  if (!modal || !modalBody) return;
 
   const stationName = toilet.station?.name || "";
   const operatorName = toilet.station?.operator_name || "";
   const header = `${operatorName}${stationName ? " / " + stationName : ""}`;
 
+  const styleText =
+    toilet.style_type === "japanese" ? "和式" :
+    toilet.style_type === "western" ? "洋式" :
+    toilet.style_type === "both" ? "併設" :
+    "不明";
+
+  const loggedIn = isLoggedIn();
+
+  // ✅ issue仕様：設備は「〇/×」で表示（男女別/共用、和式/洋式は文字）
+  const wheelchair = toilet.is_wheelchair_accessible ? "〇" : "×";
+  const ostomate   = toilet.is_ostomate_accessible ? "〇" : "×";
+  const baby       = toilet.is_baby_friendly ? "〇" : "×";
+
+  // 男女別 / 共用 は文字（issueの文言どおり）
+  const genderText = toilet.is_gender_separated ? "男女別" : "共用";
+
+  // ✅ issue仕様：Google Map ナビ用URL（緯度経度）
+  const lat = Number(toilet.latitude);
+  const lng = Number(toilet.longitude);
+  const canNavigate = Number.isFinite(lat) && Number.isFinite(lng);
+  const navUrl = canNavigate
+    ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`
+    : "";
+
   modalBody.innerHTML = `
-    <div class="modal__sub">${escapeHtml(header)}</div>
-    <div class="modal__title">${escapeHtml(toilet.name)}</div>
+    <div class="toilet-modal__header">
+      <div>
+        <div class="toilet-modal__sub">${escapeHtml(header)}</div>
+        <div class="toilet-modal__titleRow">
+          <div class="toilet-modal__title">${escapeHtml(toilet.name || "名称未登録")}</div>
+
+          ${
+            loggedIn
+              ? `<button type="button" class="toilet-modal__fav" aria-label="お気に入り">☆</button>`
+              : `<button type="button" class="toilet-modal__favHint" aria-label="ログイン案内">☆</button>`
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="toilet-modal__photo">
+      <div class="toilet-modal__photoPlaceholder">写真表示エリア（MVPは後でOK）</div>
+    </div>
+
+    <!-- ✅ issue仕様：設備情報 -->
+    <div class="toilet-modal__section">
+      <div class="toilet-modal__sectionTitle">設備情報</div>
+
+      <div class="toilet-modal__grid">
+        <div class="toilet-modal__cell">
+          ウォシュレット：${markOrUnknown(toilet.has_washlet)}
+        </div>
+        <div class="toilet-modal__cell">
+          おむつ交換設備：${markOrUnknown(toilet.is_baby_friendly)}
+        </div>
+        <div class="toilet-modal__cell">
+          多目的トイレ：${markOrUnknown(toilet.is_multipurpose)}
+        </div>
+        <div class="toilet-modal__cell">
+          車いす対応：${markOrUnknown(toilet.is_wheelchair_accessible)}
+        </div>
+        <div class="toilet-modal__cell">
+          オストメイト対応：${markOrUnknown(toilet.is_ostomate_accessible)}
+        </div>
+        <div class="toilet-modal__cell">
+          男女別：${markOrUnknown(toilet.is_gender_separated)}
+        </div>
+      </div>
+    </div>
+
+    <div class="toilet-modal__section">
+      <div class="toilet-modal__sectionTitle">場所メモ</div>
+      <div class="toilet-modal__note">${escapeHtml(toilet.location_note || "（未登録）")}</div>
+    </div>
+
+    <div class="toilet-modal__section">
+      <div class="toilet-modal__sectionTitle">評価（将来）</div>
+      <div class="toilet-modal__placeholder">評価エリア（将来）</div>
+    </div>
+
+    <div class="toilet-modal__section">
+      <div class="toilet-modal__sectionTitle">コメント（将来）</div>
+      <div class="toilet-modal__placeholder">コメント表示（将来）</div>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn--primary toilet-modal__route"
+      ${canNavigate ? "" : "disabled"}
+      data-nav-url="${escapeHtml(navUrl)}"
+    >
+      Google Mapで案内を開始する
+    </button>
   `;
 
+  bindToiletModalEvents(toilet);
+
   modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
 }
 
-function closeToiletModal() {
-  const modal = document.getElementById("toilet-modal");
-  if (!modal) return;
-  modal.classList.remove("is-open");
+
+function bindToiletModalEvents(toilet) {
+  const modalBody = document.getElementById("toilet-modal-body");
+  if (!modalBody) return;
+
+  // ☆（ログイン中）
+  const favBtn = modalBody.querySelector(".toilet-modal__fav");
+  if (favBtn) {
+    favBtn.onclick = () => {
+      console.log("お気に入り:", toilet.id);
+    };
+  }
+
+  // ☆（未ログイン：ログイン誘導）
+  const favHintBtn = modalBody.querySelector(".toilet-modal__favHint");
+  if (favHintBtn) {
+    favHintBtn.onclick = () => {
+      alert("お気に入り機能を使うにはログインが必要です");
+      // 将来：ログイン画面へ誘導するなら
+      // window.location.href = "/login";
+    };
+  }
+
+  // ルート案内（data-nav-url を優先）
+  const routeBtn = modalBody.querySelector(".toilet-modal__route");
+  if (routeBtn) {
+    routeBtn.onclick = () => {
+      const url = routeBtn.dataset.navUrl;
+      if (!url) return;
+      window.open(url, "_blank", "noopener,noreferrer");
+    };
+  }
 }
 
-document.addEventListener("turbo:load", setupGeolocationButton);
+function openRouteInGoogleMaps(toilet) {
+  const lat = Number(toilet.latitude);
+  const lng = Number(toilet.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+  // 現在地→目的地 のルート（Google Maps）
+  const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+function isLoggedIn() {
+  const mapElement = document.getElementById("map");
+  return mapElement?.dataset.isLoggedInValue === "true";
+}
+
+document.addEventListener("turbo:load", () => {
+  setupGeolocationButton();
+  setupToiletModalCloseEvents();
+});

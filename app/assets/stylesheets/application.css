@@ -9,6 +9,12 @@
  * Consider organizing styles into separate files for maintainability.
  */
 /* layout */
+#map {
+  width: 100%;
+  height: 320px; /* まずは固定でOK */
+  border-radius: 12px;
+}
+
 .site-header {
   position: sticky;
   top: 0;
@@ -213,8 +219,143 @@
   flex-wrap: wrap;
 }
 
+.toilet-card__detail {
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  line-height: 30px;
+  font-size: 18px;
+}
+
+.toilet-card__detail:hover {
+  background: #f5f5f5;
+}
+
+.toilet-card__detail:active {
+  transform: translateY(1px);
+}
+
 .facility-icon {
   font-size: 18px;
   line-height: 1;
 }
 
+.toilet-modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 1000;
+}
+
+.toilet-modal.is-open {
+  display: block;
+}
+
+.toilet-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 0;
+}
+
+.toilet-modal__panel {
+  position: absolute;
+  left: 50%;
+  top: 10%;
+  transform: translateX(-50%);
+  width: min(92vw, 520px);
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  z-index: 1;
+}
+
+.toilet-modal__close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 2;
+}
+
+/* modal body (optional) */
+.toilet-modal__body {
+  display: grid;
+  gap: 10px;
+}
+
+.toilet-modal__sub {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.toilet-modal__title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.toilet-modal__icons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toilet-modal__titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.toilet-modal__fav {
+  border: 1px solid #e5e5e5;
+  background: #fff;
+  border-radius: 999px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.toilet-modal__photoPlaceholder {
+  height: 160px;
+  border-radius: 12px;
+  background: #f1f1f1;
+  display: grid;
+  place-items: center;
+  color: #666;
+}
+
+.toilet-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.toilet-modal__cell {
+  border: 1px solid #e5e5e5;
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  background: #fff;
+  font-size: 13px;
+}
+
+.toilet-modal__sectionTitle {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.toilet-modal__placeholder {
+  background: #f1f1f1;
+  border-radius: 12px;
+  padding: 16px;
+  color: #666;
+}
+
+.toilet-modal__route {
+  width: 100%;
+  margin-top: 6px;
+}
