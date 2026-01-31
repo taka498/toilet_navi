@@ -50,8 +50,17 @@ function setupGeolocationButton() {
   button.dataset.geolocationBound = "true";
 
   const apiKey = mapElement.dataset.mapApiKeyValue;
-  const toiletsJson = mapElement.dataset.mapToiletsValue || "[]";
-  const toilets = JSON.parse(toiletsJson);
+  let toilets = [];
+  try {
+    const toiletsJson = mapElement.dataset.mapToiletsValue || "[]";
+    toilets = JSON.parse(toiletsJson);
+  } catch (e) {
+    toilets = [];
+    clearToiletList();
+    showErrorStatus("データの読み込みに失敗しました。ページを再読み込みしてください。");
+  }
+
+
 
   const modalClose = document.getElementById("toilet-modal-close");
   const modalBackdrop = document.getElementById("toilet-modal-backdrop");
@@ -74,13 +83,14 @@ function setupGeolocationButton() {
 
   button.addEventListener("click", () => {
     result.textContent = "";
+    hideStatus();
 
     if (!("geolocation" in navigator)) {
-      result.textContent = "このブラウザでは位置情報（Geolocation）が利用できません。";
+      showErrorStatus("このブラウザでは位置情報（Geolocation）が利用できません。");
       return;
     }
 
-    result.textContent = "現在地を取得しています...";
+    showLoadingStatus("現在地を取得しています...");
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -91,11 +101,16 @@ function setupGeolocationButton() {
         result.textContent =
           `取得できました。緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}（精度: 約${Math.round(accuracy)}m）`;
 
+        showLoadingStatus("地図を準備しています...");
+
         loadGoogleMap(apiKey, lat, lng, toilets);
       },
       (error) => {
-        result.textContent = errorMessageFromGeolocationError(error);
+        hideStatus();
+        clearToiletList();
+        showErrorStatus(errorMessageFromGeolocationError(error));
       },
+
       {
         enableHighAccuracy: true,
         timeout: 8000,
@@ -152,6 +167,13 @@ function initMap(lat, lng, toilets) {
 
   renderToiletMarkers(toilets);
   renderToiletList(toilets);
+
+  // ✅ 0件表示
+  if (!Array.isArray(toilets) || toilets.length === 0) {
+    showEmptyStatus("現在地周辺に登録されているトイレが見つかりませんでした。");
+  } else {
+    hideStatus();
+  }
 }
 
 /* --------------------
@@ -281,6 +303,51 @@ function markOrUnknown(value) {
   return "—"; // 未登録(null/undefined)用
 }
 
+function getSearchStatusEl() {
+  return document.getElementById("search-status");
+}
+
+function showLoadingStatus(message = "検索中...") {
+  const el = getSearchStatusEl();
+  if (!el) return;
+
+  el.className = "search-status is-show is-loading";
+  el.innerHTML = `
+    <span class="search-status__spinner" aria-hidden="true"></span>
+    <span>${escapeHtml(message)}</span>
+  `;
+}
+
+function showEmptyStatus(message = "近くにトイレが見つかりませんでした。") {
+  const el = getSearchStatusEl();
+  if (!el) return;
+
+  el.className = "search-status is-show is-empty";
+  el.textContent = message;
+}
+
+function showErrorStatus(message = "エラーが発生しました。もう一度お試しください。") {
+  const el = getSearchStatusEl();
+  if (!el) return;
+
+  el.className = "search-status is-show is-error";
+  el.textContent = message;
+}
+
+function hideStatus() {
+  const el = getSearchStatusEl();
+  if (!el) return;
+
+  el.className = "search-status";
+  el.textContent = "";
+}
+
+function clearToiletList() {
+  const list = document.getElementById("toilet-list");
+  if (!list) return;
+  list.innerHTML = "";
+}
+
 function handleToiletSelect(toilet, panTargetLatLng) {
   // 選択状態を更新
   selectToilet(toilet);
@@ -343,9 +410,6 @@ function openToiletModal(toilet) {
   const ostomate   = toilet.is_ostomate_accessible ? "〇" : "×";
   const baby       = toilet.is_baby_friendly ? "〇" : "×";
 
-  // 男女別 / 共用 は文字（issueの文言どおり）
-  const genderText = toilet.is_gender_separated ? "男女別" : "共用";
-
   // ✅ issue仕様：Google Map ナビ用URL（緯度経度）
   const lat = Number(toilet.latitude);
   const lng = Number(toilet.longitude);
@@ -354,6 +418,7 @@ function openToiletModal(toilet) {
     ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`
     : "";
 
+  // toilet.has_washlet は本リリースでDB追加予定（現状は undefined → "—" 表示）
   modalBody.innerHTML = `
     <div class="toilet-modal__header">
       <div>
