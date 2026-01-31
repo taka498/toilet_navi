@@ -359,3 +359,44 @@
   width: 100%;
   margin-top: 6px;
 }
+.search-status {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fff;
+  display: none; /* 使う時だけ表示 */
+}
+
+.search-status.is-show {
+  display: block;
+}
+
+.search-status.is-loading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-status__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #ddd;
+  border-top-color: #111;
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.search-status.is-error {
+  border-color: #ffd6d6;
+  background: #fff5f5;
+}
+
+.search-status.is-empty {
+  border-color: #eee;
+  background: #fafafa;
+}
