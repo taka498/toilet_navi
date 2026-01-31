@@ -10,12 +10,30 @@
 
 <div
   id="map"
-  style="width: 100%; height: 60vh; margin-top: 16px; border-radius: 12px;"
+  data-is-logged-in-value="false"
   data-map-api-key-value="<%= ENV.fetch('GOOGLE_MAPS_API_KEY', '') %>"
   data-map-toilets-value="<%= @toilets.as_json(
-    only: [:id, :name, :latitude, :longitude, :is_wheelchair_accessible, :is_baby_friendly],
+    only: [
+      :id, :name, :latitude, :longitude,
+      :location_note, :style_type,
+      :is_wheelchair_accessible, :is_ostomate_accessible,
+      :is_baby_friendly, :is_gender_separated, :is_multipurpose
+    ],
     include: { station: { only: [:name, :operator_name] } }
   ).to_json %>"
 ></div>
 
 <div id="toilet-list" style="margin-top: 12px;"></div>
+
+<!-- ▼ トイレ詳細モーダル（JSで中身を差し替える） -->
+<div id="toilet-modal" class="toilet-modal" aria-hidden="true">
+  <div id="toilet-modal-backdrop" class="toilet-modal__backdrop"></div>
+
+  <div class="toilet-modal__panel" role="dialog" aria-modal="true" aria-label="トイレ詳細">
+    <button type="button" id="toilet-modal-close" class="toilet-modal__close" aria-label="閉じる">
+      ×
+    </button>
+
+    <div id="toilet-modal-body" class="toilet-modal__body"></div>
+  </div>
+</div>
