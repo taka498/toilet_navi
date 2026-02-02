@@ -1,13 +1,6 @@
-<h1>トイレを探す</h1>
-
-<p>現在地から近いトイレを探します。</p>
-
-<button type="button" id="get-location" class="btn btn--primary">
-  現在地を取得する
-</button>
-
-<p id="location-result" style="margin-top: 12px;"></p>
-
+<div class="search-toolbar">
+  <p id="location-result" hidden></p>
+</div>
 <div
   id="map"
   data-is-logged-in-value="false"
@@ -25,9 +18,12 @@
 
 <div id="search-status" class="search-status" aria-live="polite"></div>
 
-<div id="toilet-list" style="margin-top: 12px;"></div>
+<button type="button" id="get-location" class="btn btn--primary search-retry">
+  位置情報を再取得する
+</button>
 
-<!-- ▼ トイレ詳細モーダル（JSで中身を差し替える） -->
+<div id="toilet-list"></div>
+
 <div id="toilet-modal" class="toilet-modal" aria-hidden="true">
   <div id="toilet-modal-backdrop" class="toilet-modal__backdrop"></div>
 

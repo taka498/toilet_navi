@@ -1,17 +1,34 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
-/* layout */
+:root {
+  /* typography */
+  --fs-xxs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+
+  /* spacing */
+  --space-1: 6px;
+  --space-2: 8px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 16px;
+
+  /* fixed bars */
+  --header-pad-y: 10px;
+  --header-pad-x: 12px;
+
+  --footer-pad-y: 8px;
+  --footer-pad-x: 12px;
+
+  /* buttons */
+  --btn-pad-y: 12px;
+  --btn-pad-x: 14px;
+  --btn-radius: 12px;
+}
+
 #map {
   width: 100%;
-  height: 320px; /* まずは固定でOK */
+  height: 320px;
   border-radius: 12px;
 }
 
@@ -26,26 +43,29 @@
 .site-header__inner {
   max-width: 960px;
   margin: 0 auto;
-  padding: 12px 16px;
+  padding: var(--header-pad-y) var(--header-pad-x);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
 }
 
 .site-logo {
   text-decoration: none;
   font-weight: 700;
   color: #111;
+  font-size: var(--fs-lg);
+  line-height: 1.2;
 }
 
 .site-main {
   max-width: 960px;
   margin: 0 auto;
   padding: 16px;
+
+  padding-bottom: calc(44px + env(safe-area-inset-bottom));
 }
 
-/* nav */
 .site-nav__link {
   text-decoration: none;
   color: #111;
@@ -57,15 +77,75 @@
   background: #f5f5f5;
 }
 
-/* desktop nav visible only on pc */
 .site-nav--desktop {
   display: none;
   gap: 8px;
 }
 
-/* mobile nav visible only on mobile */
 .site-nav--mobile {
   display: block;
+}
+
+.site-nav--mobile {
+  position: relative;
+}
+
+.hamburger-btn {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid #eee;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hamburger-btn__icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.mobile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+
+  width: 180px;
+  padding: 8px;
+
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fff;
+
+  display: grid;
+  gap: 6px;
+
+  z-index: 1001;
+}
+
+.mobile-menu__link {
+  text-decoration: none;
+  color: #111;
+  padding: 10px 10px;
+  border-radius: 10px;
+}
+
+.mobile-menu__link:hover {
+  background: #f5f5f5;
+}
+
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.08);
+  z-index: 1000;
+}
+
+.mobile-menu[hidden],
+.mobile-menu-backdrop[hidden] {
+  display: none !important;
 }
 
 /* hamburger */
@@ -101,23 +181,21 @@
 }
 
 .drawer__link {
-  text-decoration: none;
-  color: #111;
-  padding: 10px 10px;
+  padding: 8px 10px;
   border-radius: 10px;
+  font-size: var(--fs-md);
 }
 
 .drawer__link:hover {
   background: #f5f5f5;
 }
 
-/* pc breakpoint */
 @media (min-width: 768px) {
-  .site-nav--desktop {
-    display: flex;
-  }
-  .site-nav--mobile {
-    display: none;
+  .site-nav--desktop { display: flex; }
+  .site-nav--mobile  { display: none; }
+
+  .hero__actions {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -148,12 +226,20 @@
 .btn {
   display: inline-block;
   text-align: center;
-  padding: 12px 14px;
-  border-radius: 12px;
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border-radius: var(--btn-radius);
   text-decoration: none;
   border: 1px solid #ddd;
   color: #111;
   background: #fff;
+  font-size: var(--fs-lg);
+  line-height: 1.1;
+}
+
+.btn--block {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .btn--primary {
@@ -166,17 +252,21 @@
   background: #f5f5f5;
 }
 
-@media (min-width: 768px) {
-  .hero__actions {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
+.search-retry {
+  padding: 8px 12px;
+  font-size: var(--fs-md);
+  border-radius: 10px;
 }
 
-/* --- Toilet list (Search page) --- */
+/* --- トイレ一覧 --- */
 #toilet-list {
   margin-top: 12px;
   display: grid;
   gap: 10px;
+
+  max-height: 40vh;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .toilet-card {
@@ -220,18 +310,19 @@
 }
 
 .toilet-card__detail {
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  border-radius: 999px;
+  border: none;
+  background: transparent;
+  border-radius: 0;
   width: 32px;
   height: 32px;
   cursor: pointer;
-  line-height: 30px;
-  font-size: 18px;
+  line-height: 32px;
+  font-size: 22px;
+  opacity: 0.7;
 }
 
 .toilet-card__detail:hover {
-  background: #f5f5f5;
+  opacity: 1;
 }
 
 .toilet-card__detail:active {
@@ -241,6 +332,10 @@
 .facility-icon {
   font-size: 18px;
   line-height: 1;
+}
+
+body.is-modal-open {
+  overflow: hidden;
 }
 
 .toilet-modal {
@@ -264,9 +359,13 @@
 .toilet-modal__panel {
   position: absolute;
   left: 50%;
-  top: 10%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
+
   width: min(92vw, 520px);
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+
   background: #fff;
   border-radius: 12px;
   padding: 16px;
@@ -275,12 +374,21 @@
 
 .toilet-modal__close {
   position: absolute;
-  right: 12px;
   top: 12px;
+  right: 12px;
+
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
   z-index: 2;
 }
 
-/* modal body (optional) */
+.toilet-modal__close:hover {
+  opacity: 0.6;
+}
+
 .toilet-modal__body {
   display: grid;
   gap: 10px;
@@ -296,27 +404,27 @@
   font-weight: 700;
 }
 
-.toilet-modal__icons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
 .toilet-modal__titleRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  padding-right: 40px;
 }
 
-.toilet-modal__fav {
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  border-radius: 999px;
-  width: 36px;
-  height: 36px;
+
+.toilet-modal__fav,
+.toilet-modal__favHint {
+  border: none;
+  background: transparent;
+  padding: 4px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.toilet-modal__fav:hover,
+.toilet-modal__favHint:hover {
+  opacity: 0.7;
 }
 
 .toilet-modal__photoPlaceholder {
@@ -331,16 +439,45 @@
 .toilet-modal__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 
 .toilet-modal__cell {
   border: 1px solid #e5e5e5;
   border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
+  padding: 8px 6px;
   background: #fff;
-  font-size: 13px;
+
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.toilet-modal__cellLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+
+  word-break: keep-all;
+}
+
+.toilet-modal__cellDivider {
+  height: 1px;
+  background: #e5e5e5;
+}
+
+.toilet-modal__cellValue {
+  text-align: center;
+  font-size: 16px; /* 18 → 16 */
+  font-weight: 700;
+  line-height: 1;
+  min-height: 16px;
+}
+
+.toilet-modal__cellValue--text {
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .toilet-modal__sectionTitle {
@@ -359,13 +496,14 @@
   width: 100%;
   margin-top: 6px;
 }
+
 .search-status {
   margin-top: 12px;
   padding: 12px;
   border: 1px solid #eee;
   border-radius: 12px;
   background: #fff;
-  display: none; /* 使う時だけ表示 */
+  display: none;
 }
 
 .search-status.is-show {
@@ -399,4 +537,144 @@
 .search-status.is-empty {
   border-color: #eee;
   background: #fafafa;
+}
+
+.search-toolbar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.search-debug {
+  margin: 0;
+  color: #444;
+  font-size: 13px;
+}
+
+.site-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-top: 1px solid #eee;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+  z-index: 20;
+}
+
+.site-footer__inner {
+  max-width: 960px;
+  min-width: 0;
+  margin: 0 auto;
+  padding: var(--footer-pad-y) var(--footer-pad-x);
+  padding-bottom: calc(var(--footer-pad-y) + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.site-footer__logo {
+  font-weight: 700;
+  color: #111;
+  text-decoration: none;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.site-footer__nav {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  justify-content: flex-end;
+}
+
+.site-footer__link {
+  flex: 0 0 auto;
+  text-decoration: none;
+  color: #111;
+  padding: 4px 6px;
+  border-radius: 8px;
+  opacity: 0.75;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+}
+
+.site-footer__link:hover {
+  opacity: 1;
+  background: #f5f5f5;
+}
+
+.feature {
+  margin-top: 24px;
+}
+
+.feature__placeholder {
+  height: 180px;
+  border-radius: 12px;
+  background: #e5e5e5;
+  display: grid;
+  place-items: center;
+  color: #666;
+}
+
+.cta {
+  margin-top: 24px;
+  display: grid;
+  gap: 10px;
+}
+
+.feature--in-hero {
+  margin-top: 14px;
+}
+
+.cta--in-hero {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.feature__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.feature__caption {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
+}
+
+/*モバイル*/
+@media (max-width: 480px) {
+  .site-footer__inner {
+    padding: 8px 12px;
+    gap: 10px;
+  }
+
+  .site-footer__logo {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .site-footer__nav {
+    flex-wrap: nowrap;       
+    overflow-x: auto;        
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+  }
+
+  .site-footer__link {
+    padding: 3px 4px;
+    font-size: 11px;
+    white-space: nowrap;     
+  }
 }

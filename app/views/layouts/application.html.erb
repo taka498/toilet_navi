@@ -30,30 +30,57 @@
         </div>
 
         <!-- PC向けナビ（横並び） -->
-        <nav class="site-nav site-nav--desktop" aria-label="メインメニュー">
-          <%= link_to "お問い合わせ", contact_path, class: "site-nav__link" %>
-          <%= link_to "利用規約", terms_path, class: "site-nav__link" %>
-          <%= link_to "プライバシー", privacy_path, class: "site-nav__link" %>
+        <nav class="site-nav site-nav--desktop">
+          <%= link_to "トイレを探す", search_path, class: "site-nav__link" %>
+          <%= link_to "新規登録", "#", class: "site-nav__link js-auth-coming-soon" %>
+          <%= link_to "ログイン", "#", class: "site-nav__link js-auth-coming-soon" %>
+
         </nav>
 
-        <!-- スマホ向け：ハンバーガー（detailsでJS不要） -->
-        <details class="site-nav site-nav--mobile">
-          <summary class="hamburger" aria-label="メニューを開く">
-            <span class="hamburger__bar"></span>
-            <span class="hamburger__bar"></span>
-            <span class="hamburger__bar"></span>
-          </summary>
 
-          <nav class="drawer" aria-label="メインメニュー（モバイル）">
-            <%= link_to "お問い合わせ", contact_path, class: "drawer__link" %>
-            <%= link_to "利用規約", terms_path, class: "drawer__link" %>
-            <%= link_to "プライバシー", privacy_path, class: "drawer__link" %>
+        <!-- スマホ向け：ハンバーガー -->
+        <div class="site-nav site-nav--mobile">
+          <button
+            type="button"
+            class="hamburger-btn"
+            aria-label="メニューを開く"
+            aria-expanded="false"
+            aria-controls="mobile-menu"
+            data-mobile-menu-button
+          >
+            <span class="hamburger-btn__icon" data-mobile-menu-icon>☰</span>
+          </button>
+
+          <nav
+            id="mobile-menu"
+            class="mobile-menu"
+            aria-label="メインメニュー（モバイル）"
+            data-mobile-menu
+            hidden
+          >
+            <%= link_to "トイレを探す", search_path, class: "mobile-menu__link" %>
+            <%= link_to "新規登録", "#", class: "mobile-menu__link js-auth-coming-soon" %>
+            <%= link_to "ログイン", "#", class: "mobile-menu__link js-auth-coming-soon" %>
           </nav>
-        </details>
+          <div class="mobile-menu-backdrop" data-mobile-menu-backdrop hidden></div>
+        </div>
       </div>
     </header>   
     <main class="site-main">
       <%= yield %>
     </main>
+    <footer class="site-footer">
+      <div class="site-footer__inner">
+        <div class="site-footer__left">
+          <%= link_to "トイレナビ", root_path, class: "site-footer__logo" %>
+        </div>
+
+        <nav class="site-footer__nav" aria-label="フッターナビゲーション">
+          <%= link_to "お問い合わせ", contact_path, class: "site-footer__link" %>
+          <%= link_to "利用規約", terms_path, class: "site-footer__link" %>
+          <%= link_to "プライバシーポリシー", privacy_path, class: "site-footer__link" %>
+        </nav>
+      </div>
+    </footer>
   </body>
 </html>
