@@ -11,7 +11,6 @@ puts "=== development seed reset ==="
 Toilet.delete_all
 Station.delete_all
 
-# ---- Station（stationsもlat/lng必須）----
 stations = {
   shinjuku: Station.create!(
     operator_name: "JR東日本",
@@ -33,13 +32,11 @@ stations = {
   )
 }
 
-# ---- Toilet（12件：設備を散らす / スクロール確認用）----
 base_lat = 35.690900
 base_lng = 139.700200
 
 toilets = []
 
-# 新宿：10件作ってスクロール確認しやすくする
 10.times do |i|
   toilets << {
     station: stations[:shinjuku],
@@ -50,13 +47,12 @@ toilets = []
     is_wheelchair_accessible: (i % 2 == 0),
     is_ostomate_accessible: (i % 3 == 0),
     is_baby_friendly: (i % 4 == 0),
-    is_gender_separated: true,       # 共用は廃止方針とのことなので固定でtrue
+    is_gender_separated: true,
     is_multipurpose: (i % 5 == 0),
     location_note: (i % 3 == 0 ? "改札内・端の方" : nil)
   }
 end
 
-# 他駅：2件
 toilets << {
   station: stations[:omiya],
   name: "大宮 中央改札内トイレ",
@@ -85,7 +81,6 @@ toilets << {
   location_note: nil
 }
 
-# 保存（落ちたらどれが原因か出す）
 toilets.each_with_index do |t, idx|
   station = t.delete(:station)
   toilet = station.toilets.build(t)

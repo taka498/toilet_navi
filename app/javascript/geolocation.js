@@ -80,7 +80,6 @@ function setupGeolocationButton() {
     });
   }
 
-  // ✅ 追加：位置情報取得を関数化（ここが本体）
   function startGeolocation() {
     result.textContent = "";
     hideStatus();
@@ -117,12 +116,10 @@ function setupGeolocationButton() {
     );
   }
 
-  // ✅ ボタンは再試行
   button.addEventListener("click", () => {
     startGeolocation();
   });
 
-  // ✅ /search 表示時に自動開始
   startGeolocation();
 }
 
@@ -144,7 +141,6 @@ function loadGoogleMap(apiKey, lat, lng, toilets) {
   const script = document.createElement("script");
   script.id = "google-maps-script";
 
-  // 警告を減らす：loading=async を付与（callbackは維持）
   script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=__initGoogleMap&loading=async`;
 
   script.async = true;
@@ -154,10 +150,9 @@ function loadGoogleMap(apiKey, lat, lng, toilets) {
 function initMap(lat, lng, toilets) {
   map = new google.maps.Map(document.getElementById("map"), {
     center: { lat, lng },
-    zoom: 12, // トイレが散らばっているので少し広めに（必要なら16に戻してOK）
+    zoom: 12,
   });
 
-  // 現在地ピン（見分けやすく青）
   const currentMarker = new google.maps.Marker({
     position: { lat, lng },
     map: map,
@@ -165,17 +160,13 @@ function initMap(lat, lng, toilets) {
     icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
   });
 
-  // ✅ 現在地ピンもクリックで中心移動（あなたの意図どおり）
   currentMarker.addListener("click", () => {
     map.panTo(currentMarker.getPosition());
-    // ついでにズームも寄せたいなら↓（MVPなら好み）
-    // map.setZoom(16);
   });
 
   renderToiletMarkers(toilets);
   renderToiletList(toilets);
 
-  // ✅ 0件表示
   if (!Array.isArray(toilets) || toilets.length === 0) {
     showEmptyStatus("現在地周辺に登録されているトイレが見つかりませんでした。");
   } else {
@@ -183,9 +174,6 @@ function initMap(lat, lng, toilets) {
   }
 }
 
-/* --------------------
-   トイレのピン描画
--------------------- */
 function renderToiletMarkers(toilets) {
   toiletMarkersById = {};
 
@@ -206,17 +194,10 @@ function renderToiletMarkers(toilets) {
         lat: Number(toilet.latitude),
         lng: Number(toilet.longitude),
       });
-      // map.setZoom(16); // 寄せたいなら
     });
   });
 }
 
-/* --------------------
-   トイレ一覧描画（簡易）
-   - 運営会社名 + 駅名
-   - booleanはアイコン
-   - 選択状態ハイライト
--------------------- */
 function renderToiletList(toilets) {
   const list = document.getElementById("toilet-list");
   if (!list) return;
@@ -296,7 +277,6 @@ function highlightSelectedMarker(toiletId) {
   });
 }
 
-// XSS対策（最低限）
 function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (s) => {
     const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
@@ -307,7 +287,7 @@ function escapeHtml(str) {
 function markOrUnknown(value) {
   if (value === true) return "〇";
   if (value === false) return "×";
-  return "—"; // 未登録(null/undefined)用
+  return "—";
 }
 
 function getSearchStatusEl() {
@@ -356,10 +336,8 @@ function clearToiletList() {
 }
 
 function handleToiletSelect(toilet, panTargetLatLng) {
-  // 選択状態を更新
   selectToilet(toilet);
 
-  // 地図を中心へ
   if (panTargetLatLng) {
     map.panTo(panTargetLatLng);
   }
@@ -414,12 +392,10 @@ function openToiletModal(toilet) {
 
   const loggedIn = isLoggedIn();
 
-  // ✅ issue仕様：設備は「〇/×」で表示（男女別/共用、和式/洋式は文字）
   const wheelchair = toilet.is_wheelchair_accessible ? "〇" : "×";
   const ostomate   = toilet.is_ostomate_accessible ? "〇" : "×";
   const baby       = toilet.is_baby_friendly ? "〇" : "×";
 
-  // ✅ issue仕様：Google Map ナビ用URL（緯度経度）
   const lat = Number(toilet.latitude);
   const lng = Number(toilet.longitude);
   const canNavigate = Number.isFinite(lat) && Number.isFinite(lng);
@@ -427,7 +403,6 @@ function openToiletModal(toilet) {
     ? `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`
     : "";
 
-  // toilet.has_washlet は本リリースでDB追加予定（現状は undefined → "—" 表示）
   modalBody.innerHTML = `
     <div class="toilet-modal__header">
       <div>
@@ -448,7 +423,7 @@ function openToiletModal(toilet) {
       <div class="toilet-modal__photoPlaceholder">写真表示エリア（MVPは後でOK）</div>
     </div>
 
-    <!-- ✅ issue仕様：設備情報 -->
+    <!--  issue仕様：設備情報 -->
     <div class="toilet-modal__section">
       <div class="toilet-modal__sectionTitle">設備情報</div>
 
@@ -536,7 +511,6 @@ function bindToiletModalEvents(toilet) {
   const modalBody = document.getElementById("toilet-modal-body");
   if (!modalBody) return;
 
-  // ☆（ログイン中）
   const favBtn = modalBody.querySelector(".toilet-modal__fav");
   if (favBtn) {
     favBtn.onclick = () => {
@@ -544,17 +518,14 @@ function bindToiletModalEvents(toilet) {
     };
   }
 
-  // ☆（未ログイン：ログイン誘導）
   const favHintBtn = modalBody.querySelector(".toilet-modal__favHint");
   if (favHintBtn) {
     favHintBtn.onclick = () => {
       alert("お気に入り機能を使うにはログインが必要です");
-      // 将来：ログイン画面へ誘導するなら
-      // window.location.href = "/login";
+
     };
   }
 
-  // ルート案内（data-nav-url を優先）
   const routeBtn = modalBody.querySelector(".toilet-modal__route");
   if (routeBtn) {
     routeBtn.onclick = () => {
@@ -570,7 +541,6 @@ function openRouteInGoogleMaps(toilet) {
   const lng = Number(toilet.longitude);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-  // 現在地→目的地 のルート（Google Maps）
   const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`;
   window.open(url, "_blank", "noopener,noreferrer");
 }

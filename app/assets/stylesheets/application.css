@@ -1,14 +1,3 @@
-/*
- * This is a manifest file that'll be compiled into application.css.
- *
- * With Propshaft, assets are served efficiently without preprocessing steps. You can still include
- * application-wide styles in this file, but keep in mind that CSS precedence will follow the standard
- * cascading order, meaning styles declared later in the document or manifest will override earlier ones,
- * depending on specificity.
- *
- * Consider organizing styles into separate files for maintainability.
- */
-/* layout */
 :root {
   /* typography */
   --fs-xxs: 11px;
@@ -39,7 +28,7 @@
 
 #map {
   width: 100%;
-  height: 320px; /* まずは固定でOK */
+  height: 320px;
   border-radius: 12px;
 }
 
@@ -65,7 +54,7 @@
   text-decoration: none;
   font-weight: 700;
   color: #111;
-  font-size: var(--fs-lg); /* 16px */
+  font-size: var(--fs-lg);
   line-height: 1.2;
 }
 
@@ -74,11 +63,9 @@
   margin: 0 auto;
   padding: 16px;
 
-  /* フッターが薄くなった分、余白も縮める */
   padding-bottom: calc(44px + env(safe-area-inset-bottom));
 }
 
-/* nav */
 .site-nav__link {
   text-decoration: none;
   color: #111;
@@ -90,18 +77,15 @@
   background: #f5f5f5;
 }
 
-/* desktop nav visible only on pc */
 .site-nav--desktop {
   display: none;
   gap: 8px;
 }
 
-/* mobile nav visible only on mobile */
 .site-nav--mobile {
   display: block;
 }
 
-/* --- Mobile menu (button + overlay) --- */
 .site-nav--mobile {
   position: relative;
 }
@@ -138,7 +122,7 @@
   display: grid;
   gap: 6px;
 
-  z-index: 1001; /* headerより上 */
+  z-index: 1001;
 }
 
 .mobile-menu__link {
@@ -152,7 +136,6 @@
   background: #f5f5f5;
 }
 
-/* backdrop */
 .mobile-menu-backdrop {
   position: fixed;
   inset: 0;
@@ -249,7 +232,7 @@
   border: 1px solid #ddd;
   color: #111;
   background: #fff;
-  font-size: var(--fs-lg);  /* 16px */
+  font-size: var(--fs-lg);
   line-height: 1.1;
 }
 
@@ -270,18 +253,17 @@
 }
 
 .search-retry {
-  padding: 8px 12px;         /* 全体(12px 14px)より小さく */
-  font-size: var(--fs-md);   /* 14px */
+  padding: 8px 12px;
+  font-size: var(--fs-md);
   border-radius: 10px;
 }
 
-/* --- Toilet list (Search page) --- */
+/* --- トイレ一覧 --- */
 #toilet-list {
   margin-top: 12px;
   display: grid;
   gap: 10px;
 
-  /* ▼ 追加：地図は固定で、一覧だけスクロールさせる */
   max-height: 40vh;
   overflow: auto;
   padding-right: 2px;
@@ -390,7 +372,6 @@ body.is-modal-open {
   z-index: 1;
 }
 
-/* ×ボタン：右上、枠なし */
 .toilet-modal__close {
   position: absolute;
   top: 12px;
@@ -408,7 +389,6 @@ body.is-modal-open {
   opacity: 0.6;
 }
 
-/* modal body */
 .toilet-modal__body {
   display: grid;
   gap: 10px;
@@ -424,15 +404,14 @@ body.is-modal-open {
   font-weight: 700;
 }
 
-/* タイトル + ☆ を同じ行で並べる */
 .toilet-modal__titleRow {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding-right: 40px; /* ×ボタン分の余白 */
+  padding-right: 40px;
 }
 
-/* ☆ボタン：枠なし・右横に自然に */
+
 .toilet-modal__fav,
 .toilet-modal__favHint {
   border: none;
@@ -457,7 +436,6 @@ body.is-modal-open {
   color: #666;
 }
 
-/* 設備：基本は3列（gapは6pxで統一） */
 .toilet-modal__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -481,17 +459,14 @@ body.is-modal-open {
   text-align: center;
   line-height: 1.2;
 
-  /* はみ出し対策 */
   word-break: keep-all;
 }
 
-/* 区切り線：カード枠と同系色 */
 .toilet-modal__cellDivider {
   height: 1px;
   background: #e5e5e5;
 }
 
-/* 〇/×：中央、太さは残しつつ“強すぎ”を抑える */
 .toilet-modal__cellValue {
   text-align: center;
   font-size: 16px; /* 18 → 16 */
@@ -528,7 +503,7 @@ body.is-modal-open {
   border: 1px solid #eee;
   border-radius: 12px;
   background: #fff;
-  display: none; /* 使う時だけ表示 */
+  display: none;
 }
 
 .search-status.is-show {
@@ -570,7 +545,6 @@ body.is-modal-open {
   margin-bottom: 12px;
 }
 
-/* 生ログ（緯度経度など）を出すならここで整える */
 .search-debug {
   margin: 0;
   color: #444;
@@ -604,18 +578,17 @@ body.is-modal-open {
   font-weight: 700;
   color: #111;
   text-decoration: none;
-  font-size: var(--fs-sm); /* 13px */
+  font-size: var(--fs-sm);
   white-space: nowrap;
 }
 
-/* 1行維持＋溢れたら横スクロール */
 .site-footer__nav {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: nowrap;       /* ← ここが重要 */
-  overflow-x: auto;        /* ← ここが重要 */
+  flex-wrap: nowrap;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   justify-content: flex-end;
 }
@@ -627,8 +600,8 @@ body.is-modal-open {
   padding: 4px 6px;
   border-radius: 8px;
   opacity: 0.75;
-  font-size: var(--fs-sm); /* 13px */
-  white-space: nowrap;     /* ← 折り返さない */
+  font-size: var(--fs-sm);
+  white-space: nowrap;
 }
 
 .site-footer__link:hover {
@@ -655,7 +628,6 @@ body.is-modal-open {
   gap: 10px;
 }
 
-/* top page: feature/cta inside hero */
 .feature--in-hero {
   margin-top: 14px;
 }
@@ -681,9 +653,8 @@ body.is-modal-open {
   line-height: 1.5;
 }
 
-/* ========== Mobile adjustments ========== */
+/*モバイル*/
 @media (max-width: 480px) {
-  /* フッターを1行で収めやすくする */
   .site-footer__inner {
     padding: 8px 12px;
     gap: 10px;
@@ -695,8 +666,8 @@ body.is-modal-open {
   }
 
   .site-footer__nav {
-    flex-wrap: nowrap;        /* 折り返しを止める（= 1行に寄せる） */
-    overflow-x: auto;         /* 入りきらない時は横スクロールで逃がす */
+    flex-wrap: nowrap;       
+    overflow-x: auto;        
     -webkit-overflow-scrolling: touch;
     gap: 6px;
   }
@@ -704,6 +675,6 @@ body.is-modal-open {
   .site-footer__link {
     padding: 3px 4px;
     font-size: 11px;
-    white-space: nowrap;      /* “利用規約”などを途中で折らない */
+    white-space: nowrap;     
   }
 }

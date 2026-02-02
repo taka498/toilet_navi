@@ -32,15 +32,12 @@ function setupMobileMenu() {
 
   btn.addEventListener("click", toggleMenu);
 
-  // 外側タップで閉じる
   backdrop.addEventListener("click", closeMenu);
 
-  // ESCで閉じる
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeMenu();
   });
 
-  // メニュークリックで閉じたい場合（任意）
   menu.addEventListener("click", (e) => {
     const target = e.target;
     if (target && target.tagName === "A") closeMenu();
