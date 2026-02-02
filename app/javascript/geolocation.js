@@ -50,6 +50,7 @@ function setupGeolocationButton() {
   button.dataset.geolocationBound = "true";
 
   const apiKey = mapElement.dataset.mapApiKeyValue;
+
   let toilets = [];
   try {
     const toiletsJson = mapElement.dataset.mapToiletsValue || "[]";
@@ -59,8 +60,6 @@ function setupGeolocationButton() {
     clearToiletList();
     showErrorStatus("データの読み込みに失敗しました。ページを再読み込みしてください。");
   }
-
-
 
   const modalClose = document.getElementById("toilet-modal-close");
   const modalBackdrop = document.getElementById("toilet-modal-backdrop");
@@ -81,7 +80,8 @@ function setupGeolocationButton() {
     });
   }
 
-  button.addEventListener("click", () => {
+  // ✅ 追加：位置情報取得を関数化（ここが本体）
+  function startGeolocation() {
     result.textContent = "";
     hideStatus();
 
@@ -98,11 +98,10 @@ function setupGeolocationButton() {
         const lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
 
-        result.textContent =
-          `取得できました。緯度: ${lat.toFixed(6)}, 経度: ${lng.toFixed(6)}（精度: 約${Math.round(accuracy)}m）`;
-
+        result.textContent = "";
+          `lat=${lat.toFixed(6)}, lng=${lng.toFixed(6)}（精度: 約${Math.round(accuracy)}m）`;
         showLoadingStatus("地図を準備しています...");
-
+        
         loadGoogleMap(apiKey, lat, lng, toilets);
       },
       (error) => {
@@ -110,15 +109,23 @@ function setupGeolocationButton() {
         clearToiletList();
         showErrorStatus(errorMessageFromGeolocationError(error));
       },
-
       {
         enableHighAccuracy: true,
         timeout: 8000,
         maximumAge: 0,
       }
     );
+  }
+
+  // ✅ ボタンは再試行
+  button.addEventListener("click", () => {
+    startGeolocation();
   });
+
+  // ✅ /search 表示時に自動開始
+  startGeolocation();
 }
+
 
 function loadGoogleMap(apiKey, lat, lng, toilets) {
   if (window.google && window.google.maps && typeof window.google.maps.Map === "function") {
@@ -364,6 +371,8 @@ function closeToiletModal() {
 
   modal.classList.remove("is-open");
   modal.setAttribute("aria-hidden", "true");
+
+  document.body.classList.remove("is-modal-open");
 }
 
 function setupToiletModalCloseEvents() {
@@ -445,22 +454,46 @@ function openToiletModal(toilet) {
 
       <div class="toilet-modal__grid">
         <div class="toilet-modal__cell">
-          ウォシュレット：${markOrUnknown(toilet.has_washlet)}
+          <div class="toilet-modal__cellLabel">便器タイプ</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue toilet-modal__cellValue--text">
+            ${escapeHtml(styleText)}
+          </div>
+        </div>
+
+        <div class="toilet-modal__cell">
+          <div class="toilet-modal__cellLabel">ウォシュレット</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue">${markOrUnknown(toilet.has_washlet)}</div>
+        </div>
+
+        <div class="toilet-modal__cell">
+          <div class="toilet-modal__cellLabel">おむつ交換設備</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue">${markOrUnknown(toilet.is_baby_friendly)}</div>
+        </div>
+
+        <div class="toilet-modal__cell">
+          <div class="toilet-modal__cellLabel">多目的トイレ</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue">${markOrUnknown(toilet.is_multipurpose)}</div>
+        </div>
+
+        <div class="toilet-modal__cell">
+          <div class="toilet-modal__cellLabel">車いす対応</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue">${markOrUnknown(toilet.is_wheelchair_accessible)}</div>
+        </div>
+
+        <div class="toilet-modal__cell">
+          <div class="toilet-modal__cellLabel">オストメイト対応</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue">${markOrUnknown(toilet.is_ostomate_accessible)}</div>
         </div>
         <div class="toilet-modal__cell">
-          おむつ交換設備：${markOrUnknown(toilet.is_baby_friendly)}
-        </div>
-        <div class="toilet-modal__cell">
-          多目的トイレ：${markOrUnknown(toilet.is_multipurpose)}
-        </div>
-        <div class="toilet-modal__cell">
-          車いす対応：${markOrUnknown(toilet.is_wheelchair_accessible)}
-        </div>
-        <div class="toilet-modal__cell">
-          オストメイト対応：${markOrUnknown(toilet.is_ostomate_accessible)}
-        </div>
-        <div class="toilet-modal__cell">
-          男女別：${markOrUnknown(toilet.is_gender_separated)}
+          <div class="toilet-modal__cellLabel">男女別</div>
+          <div class="toilet-modal__cellDivider"></div>
+          <div class="toilet-modal__cellValue">${markOrUnknown(toilet.is_gender_separated)}</div>
         </div>
       </div>
     </div>
@@ -494,6 +527,8 @@ function openToiletModal(toilet) {
 
   modal.classList.add("is-open");
   modal.setAttribute("aria-hidden", "false");
+
+  document.body.classList.add("is-modal-open");
 }
 
 

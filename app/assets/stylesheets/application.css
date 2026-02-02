@@ -43,7 +43,13 @@
   max-width: 960px;
   margin: 0 auto;
   padding: 16px;
+  padding-bottom: 72px;
 }
+
+.site-footer__inner {
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+}
+
 
 /* nav */
 .site-nav__link {
@@ -66,6 +72,66 @@
 /* mobile nav visible only on mobile */
 .site-nav--mobile {
   display: block;
+}
+
+/* --- Mobile menu (button + overlay) --- */
+.site-nav--mobile {
+  position: relative;
+}
+
+.hamburger-btn {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  background: #fff;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hamburger-btn__icon {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.mobile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 200px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fff;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+  z-index: 1001; /* headerより上 */
+}
+
+.mobile-menu__link {
+  text-decoration: none;
+  color: #111;
+  padding: 10px 10px;
+  border-radius: 10px;
+}
+
+.mobile-menu__link:hover {
+  background: #f5f5f5;
+}
+
+/* backdrop */
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.08);
+  z-index: 1000;
+}
+
+.mobile-menu[hidden],
+.mobile-menu-backdrop[hidden] {
+  display: none !important;
 }
 
 /* hamburger */
@@ -119,6 +185,9 @@
   .site-nav--mobile {
     display: none;
   }
+    .hero__actions {
+    grid-template-columns: 1fr;
+  }
 }
 
 .hero {
@@ -145,6 +214,12 @@
   gap: 10px;
 }
 
+.hero__actions .btn {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .btn {
   display: inline-block;
   text-align: center;
@@ -166,17 +241,16 @@
   background: #f5f5f5;
 }
 
-@media (min-width: 768px) {
-  .hero__actions {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-}
-
 /* --- Toilet list (Search page) --- */
 #toilet-list {
   margin-top: 12px;
   display: grid;
   gap: 10px;
+
+  /* ▼ 追加：地図は固定で、一覧だけスクロールさせる */
+  max-height: 40vh;
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .toilet-card {
@@ -220,18 +294,19 @@
 }
 
 .toilet-card__detail {
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  border-radius: 999px;
+  border: none;
+  background: transparent;
+  border-radius: 0;
   width: 32px;
   height: 32px;
   cursor: pointer;
-  line-height: 30px;
-  font-size: 18px;
+  line-height: 32px;
+  font-size: 22px;
+  opacity: 0.7;
 }
 
 .toilet-card__detail:hover {
-  background: #f5f5f5;
+  opacity: 1;
 }
 
 .toilet-card__detail:active {
@@ -241,6 +316,10 @@
 .facility-icon {
   font-size: 18px;
   line-height: 1;
+}
+
+body.is-modal-open {
+  overflow: hidden;
 }
 
 .toilet-modal {
@@ -264,23 +343,38 @@
 .toilet-modal__panel {
   position: absolute;
   left: 50%;
-  top: 10%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
+
   width: min(92vw, 520px);
+  max-height: calc(100vh - 24px);
+  overflow: auto;
+
   background: #fff;
   border-radius: 12px;
   padding: 16px;
   z-index: 1;
 }
 
+/* ×ボタン：右上、枠なし */
 .toilet-modal__close {
   position: absolute;
-  right: 12px;
   top: 12px;
+  right: 12px;
+
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
   z-index: 2;
 }
 
-/* modal body (optional) */
+.toilet-modal__close:hover {
+  opacity: 0.6;
+}
+
+/* modal body */
 .toilet-modal__body {
   display: grid;
   gap: 10px;
@@ -296,27 +390,28 @@
   font-weight: 700;
 }
 
-.toilet-modal__icons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+/* タイトル + ☆ を同じ行で並べる */
 .toilet-modal__titleRow {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
+  padding-right: 40px; /* ×ボタン分の余白 */
 }
 
-.toilet-modal__fav {
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  border-radius: 999px;
-  width: 36px;
-  height: 36px;
+/* ☆ボタン：枠なし・右横に自然に */
+.toilet-modal__fav,
+.toilet-modal__favHint {
+  border: none;
+  background: transparent;
+  padding: 4px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.toilet-modal__fav:hover,
+.toilet-modal__favHint:hover {
+  opacity: 0.7;
 }
 
 .toilet-modal__photoPlaceholder {
@@ -328,19 +423,58 @@
   color: #666;
 }
 
+/* 設備：PC 3列、スマホで 2列/1列へ */
 .toilet-modal__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
 }
 
+.toilet-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px; /* 少し詰める */
+}
+
 .toilet-modal__cell {
   border: 1px solid #e5e5e5;
   border-radius: 10px;
-  padding: 10px 8px;
-  text-align: center;
+  padding: 8px 6px;
   background: #fff;
-  font-size: 13px;
+
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.toilet-modal__cellLabel {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+
+  /* はみ出し対策 */
+  word-break: keep-all;
+}
+
+/* 区切り線：カード枠と同系色 */
+.toilet-modal__cellDivider {
+  height: 1px;
+  background: #e5e5e5;
+}
+
+/* 〇/×：中央、太さは残しつつ“強すぎ”を抑える */
+.toilet-modal__cellValue {
+  text-align: center;
+  font-size: 16px; /* 18 → 16 */
+  font-weight: 700;
+  line-height: 1;
+  min-height: 16px;
+}
+
+.toilet-modal__cellValue--text {
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .toilet-modal__sectionTitle {
@@ -359,6 +493,7 @@
   width: 100%;
   margin-top: 6px;
 }
+
 .search-status {
   margin-top: 12px;
   padding: 12px;
@@ -399,4 +534,115 @@
 .search-status.is-empty {
   border-color: #eee;
   background: #fafafa;
+}
+
+.search-toolbar {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* 生ログ（緯度経度など）を出すならここで整える */
+.search-debug {
+  margin: 0;
+  color: #444;
+  font-size: 13px;
+}
+
+/* --- Footer (overlay) --- */
+.site-footer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  border-top: 1px solid #eee;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(6px);
+
+  z-index: 20;
+}
+
+.site-footer__inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* iPhone対策 */
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.site-footer__logo {
+  font-weight: 700;
+  color: #111;
+  text-decoration: none;
+}
+
+.site-footer__nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.site-footer__link {
+  text-decoration: none;
+  color: #111;
+  padding: 6px 8px;
+  border-radius: 8px;
+  opacity: 0.75;
+}
+
+.site-footer__link:hover {
+  opacity: 1;
+  background: #f5f5f5;
+}
+
+.feature {
+  margin-top: 24px;
+}
+
+.feature__placeholder {
+  height: 180px;
+  border-radius: 12px;
+  background: #e5e5e5;
+  display: grid;
+  place-items: center;
+  color: #666;
+}
+
+.cta {
+  margin-top: 24px;
+  display: grid;
+  gap: 10px;
+}
+
+/* top page: feature/cta inside hero */
+.feature--in-hero {
+  margin-top: 14px;
+}
+
+.cta--in-hero {
+  margin-top: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.feature__img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+.feature__caption {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.5;
 }

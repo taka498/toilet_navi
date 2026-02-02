@@ -1,14 +1,31 @@
 <section class="hero">
   <h1 class="hero__title">トイレナビ</h1>
   <p class="hero__lead">
-    近くのトイレをすばやく探せるサービスです。
+    今いる場所から、条件に合ったトイレをすぐに見つけられます
   </p>
 
   <div class="hero__actions">
     <%= link_to "探す", search_path, class: "btn btn--primary" %>
+  </div>
 
-    <%# ログイン/新規登録は本リリース以降で実装予定 %>
-    <%#= link_to "ログイン", "#", class: "btn btn--ghost" %>
-    <%#= link_to "新規登録", "#", class: "btn btn--ghost" %>
+  <section class="feature feature--in-hero">
+    <div class="feature__image">
+      <%= image_tag "home_guide_01.png",
+        class: "feature__img",
+        alt: "トイレナビの使い方イメージ" rescue nil %>
+
+      <noscript>
+        <div class="feature__placeholder">アプリの使い方イメージ</div>
+      </noscript>
+    </div>
+
+    <p class="feature__caption">
+      現在地から近いトイレを地図で確認し、詳細からGoogleマップで案内を開始できます。
+    </p>
+  </section>
+
+  <div class="hero__actions">
+    <%= link_to "新規登録する", "#", class: "btn btn--primary js-auth-coming-soon" %>
+    <%= link_to "ログイン", "#", class: "btn js-auth-coming-soon" %>
   </div>
 </section>
