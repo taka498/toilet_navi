@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_01_26_114538) do
+ActiveRecord::Schema[8.0].define(version: 2026_02_03_071109) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -39,6 +39,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_01_26_114538) do
     t.string "place_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "has_washlet"
     t.index ["station_id"], name: "index_toilets_on_station_id"
   end
 
