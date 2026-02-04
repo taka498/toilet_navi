@@ -64,10 +64,12 @@ https://www.figma.com/design/Web49eeklU5QUiowlo5i3S/toilet_navi?node-id=0-1&p=f&
   - 乳幼児対応
   - 男女別/共用
   - 和式/洋式
+  - ウォシュレット有無
 
 ※ MVP では、トイレの空き状況や混雑の有無は扱わず、
 トイレの場所をすぐに確認し、迷わず到達できることを解決したい課題としています。
-駅トイレ候補については、現在地からの距離を基準に複数表示する想定です。
+駅トイレ候補については、現在地周辺の複数トイレを表示し、
+詳細は地図と一覧から確認できる設計としています。
 
 ### 本リリースまでに追加したい機能
 
@@ -83,7 +85,7 @@ https://www.figma.com/design/Web49eeklU5QUiowlo5i3S/toilet_navi?node-id=0-1&p=f&
 ## 使用する技術スタック
 
 - 使用するフレームワーク（例：使用するフレームワークのバージョン情報等）
-  Ruby on Rails
+  Ruby on Rails 8.x
 
 - データベース（MySQL / PostgreSQL など）
   PostgreSQL
