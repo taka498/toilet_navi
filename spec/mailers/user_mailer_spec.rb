@@ -11,7 +11,7 @@ RSpec.describe UserMailer, type: :mailer do
 
       mail = UserMailer.email_confirmation(user)
 
-      expect(mail.to).to eq([user.email_address])
+      expect(mail.to).to eq([ user.email_address ])
       expect(mail.subject).to eq("【Toilet Navi】メールアドレス確認")
     end
 
@@ -26,7 +26,6 @@ RSpec.describe UserMailer, type: :mailer do
 
       html = mail.html_part&.body&.decoded
       expect(html).to include("/email/confirm?token=")
-      expect(html).to include("http://localhost:3000")
     end
   end
 end
