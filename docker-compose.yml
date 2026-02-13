@@ -1,5 +1,4 @@
 # docker-compose.yml
-version: '3.8'
 
 services:
   db:
@@ -35,6 +34,11 @@ services:
       RAILS_ENV: development
     env_file:
       - .env
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "8025:8025"
+      - "1025:1025"
 
 volumes:
   postgres_data:

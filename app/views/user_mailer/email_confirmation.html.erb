@@ -1,0 +1,4 @@
+<p>以下のリンクをクリックしてメールアドレスを確認してください。</p>
+<p>
+  <%= link_to "メールアドレスを確認する", email_confirmation_url(token: @user.email_confirmation_token) %>
+</p>

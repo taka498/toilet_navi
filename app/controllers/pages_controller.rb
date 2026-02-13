@@ -1,13 +1,9 @@
 class PagesController < ApplicationController
-  def home
-  end
+  allow_unauthenticated_access only: %i[home terms privacy contact]
 
-  def terms
-  end
-
-  def privacy
-  end
-
-  def contact
-  end
+  def home; end
+  def terms; end
+  def privacy; end
+  def contact; end
 end
+

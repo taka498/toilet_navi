@@ -678,3 +678,17 @@ body.is-modal-open {
     white-space: nowrap;     
   }
 }
+
+.site-nav__logout-btn,
+.mobile-menu__logout-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+.site-nav__link--disabled,
+.mobile-menu__link--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,20 @@
+<h1>サインアップ</h1>
+
+<%= form_with model: @user, url: signup_path do |f| %>
+  <div>
+    <%= f.label :email_address, "メールアドレス" %><br>
+    <%= f.email_field :email_address, required: true, autocomplete: "username" %>
+  </div>
+
+  <div>
+    <%= f.label :password %><br>
+    <%= f.password_field :password, required: true %>
+  </div>
+
+  <div>
+    <%= f.label :password_confirmation %><br>
+    <%= f.password_field :password_confirmation, required: true %>
+  </div>
+
+  <%= f.submit "登録" %>
+<% end %>
