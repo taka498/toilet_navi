@@ -2,5 +2,4 @@
 import "@hotwired/turbo-rails"
 import "geolocation"
 import "controllers"
-import "auth_placeholder"
 import "mobile_menu"

@@ -23,8 +23,10 @@
     </p>
   </section>
 
-  <div class="hero__actions">
-    <%= link_to "新規登録する", "#", class: "btn btn--primary btn--block js-auth-coming-soon" %>
-    <%= link_to "ログイン", "#", class: "btn btn--block js-auth-coming-soon" %>
-  </div>
+  <% unless authenticated? %>
+    <div class="hero__actions">
+      <%= link_to "新規登録する", signup_path, class: "btn btn--primary btn--block" %>
+      <%= link_to "ログイン", new_session_path, class: "btn btn--secondary btn--block" %>
+    </div>
+  <% end %>
 </section>
