@@ -3,7 +3,7 @@ module Authentication
 
   included do
     before_action :require_authentication
-    helper_method :authenticated?
+    helper_method :current_user, :authenticated?
   end
 
   class_methods do
@@ -13,12 +13,24 @@ module Authentication
   end
 
   private
+
+    # ★ 追加（重要）
+    def current_user
+      Current.session&.user
+    end
+
     def authenticated?
-      resume_session
+      resume_session.present?
     end
 
     def require_authentication
-      resume_session || request_authentication
+      return if authenticated?
+
+      respond_to do |format|
+        format.json { head :unauthorized }
+        format.html { redirect_to new_session_path, alert: "ログインが必要です" }
+        format.any  { head :unauthorized }
+      end
     end
 
     def resume_session
@@ -39,14 +51,21 @@ module Authentication
     end
 
     def start_new_session_for(user)
-      user.sessions.create!(user_agent: request.user_agent, ip_address: request.remote_ip).tap do |session|
+      user.sessions.create!(
+        user_agent: request.user_agent,
+        ip_address: request.remote_ip
+      ).tap do |session|
         Current.session = session
-        cookies.signed.permanent[:session_id] = { value: session.id, httponly: true, same_site: :lax }
+        cookies.signed.permanent[:session_id] = {
+          value: session.id,
+          httponly: true,
+          same_site: :lax
+        }
       end
     end
 
     def terminate_session
-      Current.session.destroy
+      Current.session&.destroy
       cookies.delete(:session_id)
     end
 end

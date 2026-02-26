@@ -2,8 +2,11 @@ class User < ApplicationRecord
   has_secure_password
   has_many :sessions, dependent: :destroy
 
+  has_many :favorites, dependent: :destroy
+  has_many :favorite_toilets, through: :favorites, source: :toilet
+
   normalizes :email_address, with: ->(e) { e.strip.downcase }
-  before_validation :set_email_confirmation_token, on: :create
+  before_create :set_email_confirmation_token
 
   def email_confirmed?
     email_confirmed_at.present?
@@ -12,6 +15,6 @@ class User < ApplicationRecord
   private
 
   def set_email_confirmation_token
-    self[:email_confirmation_token] ||= SecureRandom.urlsafe_base64(32)
+    self.email_confirmation_token ||= SecureRandom.urlsafe_base64(32)
   end
 end
