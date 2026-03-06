@@ -14,8 +14,9 @@ module Authentication
 
   private
 
-    # ★ 追加（重要）
+    # ✅ 未ログインOKのアクションでも、cookieがあればCurrent.sessionを復元して current_user を返す
     def current_user
+      resume_session
       Current.session&.user
     end
 
