@@ -1,9 +1,9 @@
 Rails.application.routes.draw do
-  resources :toilets, only: [:index, :show] do
+  resources :toilets, only: [ :index, :show ] do
     resource :favorite, only: %i[create destroy]
   end
 
-  resources :favorites, only: [:index]
+  resources :favorites, only: [ :index ]
 
 
   get "email_confirmations/show"

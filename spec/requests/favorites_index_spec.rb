@@ -50,7 +50,7 @@ RSpec.describe "Favorites index", type: :request do
   context "when not logged in" do
     it "redirects to login (or returns 401 depending on your implementation)" do
       get "/favorites"
-      expect([302, 401]).to include(response.status)
+      expect([ 302, 401 ]).to include(response.status)
     end
   end
 end
