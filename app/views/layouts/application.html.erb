@@ -22,7 +22,7 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
+  <body data-authenticated="<%= authenticated? ? "true" : "false" %>">
     <header class="site-header">
       <div class="site-header__inner">
         <div class="site-header__left">
@@ -33,7 +33,7 @@
           <%= link_to "トイレを探す", search_path, class: "site-nav__link" %>
 
           <% if respond_to?(:authenticated?) && authenticated? %>
-            <span class="site-nav__link site-nav__link--disabled">お気に入り（準備中）</span>
+            <%= link_to "お気に入り", favorites_path, class: "site-nav__link" %>
             <span class="site-nav__link site-nav__link--disabled">通勤・通学ルート（準備中）</span>
             <span class="site-nav__link site-nav__link--disabled">評価・投稿一覧（準備中）</span>
             <span class="site-nav__link site-nav__link--disabled">マイページ（準備中）</span>
@@ -74,7 +74,7 @@
             <%= link_to "トイレを探す", search_path, class: "mobile-menu__link" %>
 
           <% if authenticated? %>
-            <span class="mobile-menu__link mobile-menu__link--disabled">お気に入り（準備中）</span>
+            <%= link_to "お気に入り", favorites_path, class: "site-nav__link" %>
             <span class="mobile-menu__link mobile-menu__link--disabled">通勤・通学ルート（準備中）</span>
             <span class="mobile-menu__link mobile-menu__link--disabled">評価・投稿一覧（準備中）</span>
             <span class="mobile-menu__link mobile-menu__link--disabled">マイページ（準備中）</span>
@@ -108,5 +108,6 @@
         </nav>
       </div>
     </footer>
+    <%= render "shared/toilet_modal" %>
   </body>
 </html>

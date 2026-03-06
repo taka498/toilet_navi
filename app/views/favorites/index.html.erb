@@ -1,0 +1,40 @@
+<h1 class="page-title">お気に入り</h1>
+
+<% if @favorites.empty? %>
+  <p>お気に入りはまだありません。</p>
+  <%= link_to "トイレを探す", search_path, class: "btn btn--primary" %>
+<% else %>
+  <ul class="favorites-list" data-favorites-root="true">
+    <% @favorites.each do |fav| %>
+      <% toilet = fav.toilet %>
+    
+      <li class="favorites-item" data-favorites-item="true" data-toilet-id="<%= toilet.id %>">
+        <button
+          type="button"
+          class="btn btn--secondary favorites-item__open"
+          data-open-toilet-modal="true"
+          data-toilet-id="<%= toilet.id %>"
+        >
+          <%= toilet.name %>
+        </button>
+          
+        <% if toilet.station %>
+          <div class="favorites-item__sub">
+            <%= toilet.station.operator_name %> / <%= toilet.station.name %>
+          </div>
+        <% end %>
+          
+        <div class="favorites-actions">
+          <button
+            type="button"
+            class="btn btn--secondary"
+            data-favorites-unfavorite="true"
+            data-toilet-id="<%= toilet.id %>"
+          >
+            解除
+          </button>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

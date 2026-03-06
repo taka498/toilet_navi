@@ -38,7 +38,7 @@ function buildFacilityIconsHtml(toilet) {
 }
 
 
-function setupGeolocationButton() {
+async function setupGeolocationButton() {
   const button = document.getElementById("get-location");
   const result = document.getElementById("location-result");
   const mapElement = document.getElementById("map");
@@ -51,10 +51,15 @@ function setupGeolocationButton() {
 
   const apiKey = mapElement.dataset.mapApiKeyValue;
 
+  async function fetchToilets() {
+    const res = await fetch("/toilets.json", { credentials: "same-origin" });
+    if (!res.ok) throw new Error(`Failed to fetch toilets: ${res.status}`);
+    return await res.json();
+  }
+
   let toilets = [];
   try {
-    const toiletsJson = mapElement.dataset.mapToiletsValue || "[]";
-    toilets = JSON.parse(toiletsJson);
+    toilets = await fetchToilets();
   } catch (e) {
     toilets = [];
     clearToiletList();
@@ -97,9 +102,9 @@ function setupGeolocationButton() {
         const lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
 
-        result.textContent = "";
+        result.textContent =
           `lat=${lat.toFixed(6)}, lng=${lng.toFixed(6)}（精度: 約${Math.round(accuracy)}m）`;
-        showLoadingStatus("地図を準備しています...");
+
         
         loadGoogleMap(apiKey, lat, lng, toilets);
       },
@@ -176,6 +181,11 @@ function initMap(lat, lng, toilets) {
 
 function renderToiletMarkers(toilets) {
   toiletMarkersById = {};
+
+  if (!Array.isArray(toilets)) {
+    console.warn("[ToiletNavi] toilets is not array:", toilets);
+    toilets = [];
+  }
 
   toilets.forEach((toilet) => {
     const marker = new google.maps.Marker({
@@ -391,6 +401,7 @@ function openToiletModal(toilet) {
     "不明";
 
   const loggedIn = isLoggedIn();
+  const favorited = toilet.favorited === true;
 
   const wheelchair = toilet.is_wheelchair_accessible ? "〇" : "×";
   const ostomate   = toilet.is_ostomate_accessible ? "〇" : "×";
@@ -412,9 +423,17 @@ function openToiletModal(toilet) {
 
           ${
             loggedIn
-              ? `<button type="button" class="toilet-modal__fav" aria-label="お気に入り">☆</button>`
+              ? `<button
+                  type="button"
+                  class="toilet-modal__fav"
+                  data-favorite-button="true"
+                  data-toilet-id="${toilet.id}"
+                  aria-label="お気に入り"
+                  aria-pressed="${favorited ? "true" : "false"}"
+                >${favorited ? "★" : "☆"}</button>`
               : `<button type="button" class="toilet-modal__favHint" aria-label="ログイン案内">☆</button>`
           }
+
         </div>
       </div>
     </div>
@@ -497,7 +516,6 @@ function openToiletModal(toilet) {
       Google Mapで案内を開始する
     </button>
   `;
-
   bindToiletModalEvents(toilet);
 
   modal.classList.add("is-open");
@@ -506,23 +524,224 @@ function openToiletModal(toilet) {
   document.body.classList.add("is-modal-open");
 }
 
+function setupToiletModalDelegationOnce() {
+  if (document.documentElement.dataset.toiletModalDelegationBound === "true") return;
+  document.documentElement.dataset.toiletModalDelegationBound = "true";
+
+  document.addEventListener("click", async (e) => {
+    const favBtn = e.target.closest('[data-favorite-button="true"]');
+    if (!favBtn) return;
+
+    const toiletId = favBtn.dataset.toiletId;
+    if (!toiletId) return;
+
+    // 連打対策（toggleFavorite側でもbusyを見ているが、委譲側でも早めに抑止）
+    if (favBtn.dataset.busy === "true") return;
+
+    try {
+      const res = await fetch(`/toilets/${toiletId}.json`, {
+        credentials: "same-origin",
+        headers: { "Accept": "application/json" }
+      });
+
+      if (!res.ok) {
+        alert("トイレ情報の取得に失敗しました");
+        return;
+      }
+
+      const toilet = await res.json();
+      await toggleFavorite(favBtn, toilet);
+    } catch (err) {
+      console.error(err);
+      alert("通信エラーが発生しました");
+    }
+  });
+}
+
+async function openToiletModalById(toiletId) {
+  const res = await fetch(`/toilets/${toiletId}.json`, {
+    credentials: "same-origin",
+    headers: { "Accept": "application/json" }
+  });
+
+  if (!res.ok) {
+    alert("トイレ情報の取得に失敗しました");
+    return;
+  }
+
+  const toilet = await res.json();
+  openToiletModal(toilet);
+}
+
+document.addEventListener("turbo:load", () => {
+  setupGeolocationButton();
+  setupToiletModalCloseEvents();
+  setupToiletModalDelegationOnce(); // ✅ 追加
+  setupFavoritesIndexBindings();
+});
+
+function setupFavoritesIndexBindings() {
+  // favoritesページにいないなら何もしない（他ページに影響させない）
+  const root = document.querySelector('[data-favorites-root="true"]');
+  if (!root) return;
+
+  // Turbo再訪でも多重登録しない
+  if (document.documentElement.dataset.favoritesIndexBound === "true") return;
+  document.documentElement.dataset.favoritesIndexBound = "true";
+
+  document.addEventListener("click", async (e) => {
+    // 1) トイレ名クリック → モーダルを開く
+    const openBtn = e.target.closest('[data-open-toilet-modal="true"]');
+    if (openBtn) {
+      const toiletId = openBtn.dataset.toiletId;
+      if (!toiletId) return;
+      e.preventDefault();
+      await openToiletModalById(toiletId);
+      return;
+    }
+
+    // 2) 解除クリック → DELETE → 行削除 → 同期イベント
+    const unfavBtn = e.target.closest('[data-favorites-unfavorite="true"]');
+    if (unfavBtn) {
+      const toiletId = unfavBtn.dataset.toiletId;
+      if (!toiletId) return;
+
+      unfavBtn.disabled = true;
+
+      try {
+        const res = await fetch(`/toilets/${toiletId}/favorite`, {
+          method: "DELETE",
+          credentials: "same-origin",
+          headers: {
+            "Accept": "application/json",
+            "X-CSRF-Token": csrfToken() || "",
+          },
+        });
+
+        if (res.status === 401) {
+          alert("ログインしてください");
+          window.location.href = "/session/new";
+          return;
+        }
+
+        if (!res.ok) {
+          alert("お気に入りの更新に失敗しました");
+          unfavBtn.disabled = false;
+          return;
+        }
+
+        const data = await res.json(); // { favorited: false } 想定
+
+        const nearestItem = unfavBtn.closest('[data-favorites-item="true"]');
+        if (nearestItem) {
+          nearestItem.remove();
+        } else {
+           // 2) 保険：rootの中からID一致で探して消す（空白なし・確実）
+          const selector = `[data-favorites-item="true"][data-toilet-id="${CSS.escape(String(toiletId))}"]`;
+          const item = root.querySelector(selector);
+          if (item) item.remove(); 
+        }
+
+        if (root.querySelectorAll('[data-favorites-item="true"]').length === 0) {
+          const container = root.parentElement; // ulの親（elseブロック内の領域）を想定
+          if (container) {
+            container.innerHTML = `
+              <p>お気に入りはまだありません。</p>
+              <a class="btn btn--primary" href="/search">トイレを探す</a>
+            `;
+          }
+        }
+
+        // モーダルや他UIへ同期通知
+        window.dispatchEvent(new CustomEvent("toilet:favorited-changed", {
+          detail: { toiletId: String(toiletId), favorited: Boolean(data.favorited) }
+        }));
+        } catch (err) {
+        console.error(err);
+        alert("通信エラーが発生しました");
+        unfavBtn.disabled = false;
+      }
+    }
+  });
+}
+
+function csrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  return meta?.content;
+}
+
+async function toggleFavorite(button, toilet) {
+  const toiletId = button.dataset.toiletId;
+  const pressed = button.getAttribute("aria-pressed") === "true";
+
+  const url = `/toilets/${toiletId}/favorite`;
+  const method = pressed ? "DELETE" : "POST";
+
+  // 二重送信防止（連打対策）
+  if (button.dataset.busy === "true") return;
+  button.dataset.busy = "true";
+  button.disabled = true;
+
+  try {
+    const res = await fetch(url, {
+      method: method,
+      credentials: "same-origin",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "X-CSRF-Token": csrfToken() || ""
+      }
+    });
+
+    if (res.status === 401) {
+      alert("ログインしてください");
+      window.location.href = "/session/new";
+      return;
+    }
+
+    if (!res.ok) {
+      alert("お気に入りの更新に失敗しました");
+      return;
+    }
+
+    const data = await res.json();
+
+    button.setAttribute("aria-pressed", data.favorited ? "true" : "false");
+    button.textContent = data.favorited ? "★" : "☆";
+    toilet.favorited = data.favorited;
+
+    // ✅ 同期イベント（Favorites一覧・他UIがこれを受けて更新できる）
+    window.dispatchEvent(new CustomEvent("toilet:favorited-changed", {
+      detail: { toiletId: String(toiletId), favorited: Boolean(data.favorited) }
+    }));
+
+    // ✅ Favoritesページを見ている時だけ：解除なら行を消す（同期漏れ防止）
+    if (!data.favorited) {
+      const root = document.querySelector('[data-favorites-root="true"]');
+      if (root) {
+        const item = root.querySelector(`[data-favorites-item="true"][data-toilet-id="${toiletId}"]`);
+        if (item) item.remove();
+      }
+    }
+  } catch (e) {
+    console.error(e);
+    alert("通信エラーが発生しました");
+  } finally {
+    button.dataset.busy = "false";
+    button.disabled = false;
+  }
+}
 
 function bindToiletModalEvents(toilet) {
   const modalBody = document.getElementById("toilet-modal-body");
   if (!modalBody) return;
 
-  const favBtn = modalBody.querySelector(".toilet-modal__fav");
-  if (favBtn) {
-    favBtn.onclick = () => {
-      console.log("お気に入り:", toilet.id);
-    };
-  }
+  // ✅ favBtn は openToiletModal() 側で toggleFavorite を付けているので、ここでは触らない
 
   const favHintBtn = modalBody.querySelector(".toilet-modal__favHint");
   if (favHintBtn) {
     favHintBtn.onclick = () => {
       alert("お気に入り機能を使うにはログインが必要です");
-
     };
   }
 
@@ -546,11 +765,5 @@ function openRouteInGoogleMaps(toilet) {
 }
 
 function isLoggedIn() {
-  const mapElement = document.getElementById("map");
-  return mapElement?.dataset.isLoggedInValue === "true";
+  return document.body?.dataset?.authenticated === "true";
 }
-
-document.addEventListener("turbo:load", () => {
-  setupGeolocationButton();
-  setupToiletModalCloseEvents();
-});

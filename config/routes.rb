@@ -1,4 +1,11 @@
 Rails.application.routes.draw do
+  resources :toilets, only: [ :index, :show ] do
+    resource :favorite, only: %i[create destroy]
+  end
+
+  resources :favorites, only: [ :index ]
+
+
   get "email_confirmations/show"
   get "users/new"
   get "up" => "rails/health#show", as: :rails_health_check
