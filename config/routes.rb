@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   resources :toilets, only: [ :index, :show ] do
-    resource :favorite, only: %i[create destroy]
+    resource :favorite, only: [ :create, :destroy ], controller: "toilet_favorites"
+    resources :reviews, only: [ :create ], controller: "toilet_reviews"
   end
 
   resources :favorites, only: [ :index ]

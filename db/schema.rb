@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_02_13_072326) do
+ActiveRecord::Schema[8.0].define(version: 2026_03_08_040341) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -22,6 +22,18 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_13_072326) do
     t.index ["toilet_id"], name: "index_favorites_on_toilet_id"
     t.index ["user_id", "toilet_id"], name: "index_favorites_on_user_id_and_toilet_id", unique: true
     t.index ["user_id"], name: "index_favorites_on_user_id"
+  end
+
+  create_table "reviews", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "toilet_id", null: false
+    t.integer "rating", null: false
+    t.text "comment"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["toilet_id"], name: "index_reviews_on_toilet_id"
+    t.index ["user_id", "toilet_id"], name: "index_reviews_on_user_id_and_toilet_id", unique: true
+    t.index ["user_id"], name: "index_reviews_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -74,6 +86,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_02_13_072326) do
 
   add_foreign_key "favorites", "toilets"
   add_foreign_key "favorites", "users"
+  add_foreign_key "reviews", "toilets"
+  add_foreign_key "reviews", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "toilets", "stations"
 end
