@@ -498,13 +498,8 @@ function openToiletModal(toilet) {
     </div>
 
     <div class="toilet-modal__section">
-      <div class="toilet-modal__sectionTitle">評価（将来）</div>
-      <div class="toilet-modal__placeholder">評価エリア（将来）</div>
-    </div>
-
-    <div class="toilet-modal__section">
-      <div class="toilet-modal__sectionTitle">コメント（将来）</div>
-      <div class="toilet-modal__placeholder">コメント表示（将来）</div>
+      <div class="toilet-modal__sectionTitle">レビュー</div>
+      ${buildReviewsHtml(toilet)}
     </div>
 
     <button
@@ -522,6 +517,51 @@ function openToiletModal(toilet) {
   modal.setAttribute("aria-hidden", "false");
 
   document.body.classList.add("is-modal-open");
+}
+
+function buildReviewsHtml(toilet) {
+  const reviewSummary = toilet.review_summary || {};
+  const reviews = Array.isArray(toilet.reviews) ? toilet.reviews : [];
+
+  const averageRating =
+    reviewSummary.average_rating == null ? "未評価" : `${reviewSummary.average_rating} / 5`;
+  const reviewCount = reviewSummary.review_count || 0;
+
+  const summaryHtml = `
+    <div class="toilet-modal__reviewSummary">
+      <div class="toilet-modal__reviewAverage">平均評価: ${escapeHtml(String(averageRating))}</div>
+      <div class="toilet-modal__reviewCount">レビュー件数: ${reviewCount}件</div>
+    </div>
+  `;
+
+  if (reviews.length === 0) {
+    return `
+      ${summaryHtml}
+      <div class="toilet-modal__placeholder">レビューはまだありません</div>
+    `;
+  }
+
+  const itemsHtml = reviews.map((review) => {
+    const email = review.user?.email_address || "ユーザー";
+    const comment = review.comment?.trim() ? review.comment : "コメントなし";
+
+    return `
+      <div class="toilet-modal__reviewItem">
+        <div class="toilet-modal__reviewHeader">
+          <span class="toilet-modal__reviewUser">${escapeHtml(email)}</span>
+          <span class="toilet-modal__reviewRating">★${escapeHtml(String(review.rating))}</span>
+        </div>
+        <div class="toilet-modal__reviewComment">${escapeHtml(comment)}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    ${summaryHtml}
+    <div class="toilet-modal__reviewList">
+      ${itemsHtml}
+    </div>
+  `;
 }
 
 function setupToiletModalDelegationOnce() {

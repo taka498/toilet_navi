@@ -9,7 +9,7 @@ class ToiletsController < ApplicationController
   end
 
   def show
-    toilet = Toilet.includes(:station).find(params[:id])
+    toilet = Toilet.includes(reviews: :user, station: []).find(params[:id])
 
     render json: build_toilet_json(toilet), status: :ok
   end
@@ -36,11 +36,19 @@ class ToiletsController < ApplicationController
         if favorited_ids
           favorited_ids.include?(toilet.id)
         else
-          # ✅ show 単体でも安全に判定できるように
           ::Favorite.exists?(user_id: current_user.id, toilet_id: toilet.id)
         end
       else
         false
+      end
+
+    reviews = toilet.reviews.includes(:user).order(created_at: :desc)
+
+    average_rating =
+      if reviews.any?
+        (reviews.average(:rating).to_f.round(1))
+      else
+        nil
       end
 
     {
@@ -53,7 +61,7 @@ class ToiletsController < ApplicationController
       is_baby_friendly: toilet.is_baby_friendly,
       is_multipurpose: toilet.is_multipurpose,
       is_wheelchair_accessible: toilet.is_wheelchair_accessible,
-      is_ostomate_accessible: toilet.is_ostomate_accessible, # ←抜け防止
+      is_ostomate_accessible: toilet.is_ostomate_accessible,
       is_gender_separated: toilet.is_gender_separated,
       location_note: toilet.location_note,
       favorited: favorited,
@@ -61,7 +69,23 @@ class ToiletsController < ApplicationController
         id: toilet.station&.id,
         name: toilet.station&.name,
         operator_name: toilet.station&.operator_name
-      }
+      },
+      review_summary: {
+        average_rating: average_rating,
+        review_count: reviews.size
+      },
+      reviews: reviews.map do |review|
+        {
+          id: review.id,
+          rating: review.rating,
+          comment: review.comment.to_s,
+          created_at: review.created_at,
+          user: {
+            id: review.user.id,
+            email_address: review.user.email_address
+          }
+        }
+      end
     }
   end
 end

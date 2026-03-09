@@ -1,0 +1,44 @@
+<h1 class="page-title">自分のレビュー一覧</h1>
+
+<% if @reviews.empty? %>
+  <p>まだレビューはありません。</p>
+  <%= link_to "トイレを探す", search_path, class: "btn btn--primary" %>
+<% else %>
+  <ul class="reviews-list">
+    <% @reviews.each do |review| %>
+      <% toilet = review.toilet %>
+
+      <li class="reviews-item">
+        <div class="reviews-item__header">
+          <div>
+            <div class="reviews-item__title">
+              <%= toilet.name %>
+            </div>
+
+            <% if toilet.station %>
+              <div class="reviews-item__sub">
+                <%= toilet.station.operator_name %> / <%= toilet.station.name %>
+              </div>
+            <% end %>
+          </div>
+
+          <div class="reviews-item__rating">
+            ★ <%= review.rating %>
+          </div>
+        </div>
+
+        <div class="reviews-item__comment">
+          <%= review.comment.present? ? review.comment : "コメントなし" %>
+        </div>
+
+        <div class="reviews-item__meta">
+          投稿日: <%= l(review.created_at, format: :short) %>
+        </div>
+
+        <div class="reviews-item__actions">
+          <%= link_to "トイレ詳細を見る", search_path, class: "btn btn--secondary" %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
