@@ -1,11 +1,11 @@
 Rails.application.routes.draw do
   resources :toilets, only: [ :index, :show ] do
     resource :favorite, only: [ :create, :destroy ], controller: "toilet_favorites"
-    resources :reviews, only: [ :create ], controller: "toilet_reviews"
+    resources :reviews, only: [ :index, :new, :create ], controller: "toilet_reviews"
   end
 
   resources :favorites, only: [ :index ]
-  resources :reviews, only: [ :index ]
+  resources :reviews, only: [ :index, :edit, :update, :destroy ]
 
   get "email_confirmations/show"
   get "users/new"

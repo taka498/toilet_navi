@@ -1,7 +1,7 @@
 require "set"
 
 class ToiletsController < ApplicationController
-  allow_unauthenticated_access only: %i[index show]
+  allow_unauthenticated_access only: %i[ index show ]
 
   def index
     toilets = Toilet.includes(:station).order(:id)
@@ -9,7 +9,7 @@ class ToiletsController < ApplicationController
   end
 
   def show
-    toilet = Toilet.includes(reviews: :user, station: []).find(params[:id])
+    toilet = Toilet.includes(:station, reviews: :user).find(params[:id])
 
     render json: build_toilet_json(toilet), status: :ok
   end
@@ -19,7 +19,6 @@ class ToiletsController < ApplicationController
   def build_payload(toilets)
     favorited_ids =
       if current_user
-        # ✅ 名前空間問題を避けるため ::Favorite に固定
         ::Favorite.where(user_id: current_user.id).pluck(:toilet_id).to_set
       else
         Set.new
@@ -46,9 +45,12 @@ class ToiletsController < ApplicationController
 
     average_rating =
       if reviews.any?
-        (reviews.average(:rating).to_f.round(1))
-      else
-        nil
+        reviews.average(:rating).to_f.round(1)
+      end
+
+    current_user_review =
+      if current_user
+        reviews.find { |review| review.user_id == current_user.id }
       end
 
     {
@@ -74,6 +76,11 @@ class ToiletsController < ApplicationController
         average_rating: average_rating,
         review_count: reviews.size
       },
+      current_user_review: current_user_review ? {
+        id: current_user_review.id,
+        rating: current_user_review.rating,
+        comment: current_user_review.comment.to_s
+      } : nil,
       reviews: reviews.map do |review|
         {
           id: review.id,
@@ -81,8 +88,8 @@ class ToiletsController < ApplicationController
           comment: review.comment.to_s,
           created_at: review.created_at,
           user: {
-            id: review.user.id,
-            email_address: review.user.email_address
+            id: review.user&.id,
+            display_name: review.user&.display_name.presence || "no name"
           }
         }
       end

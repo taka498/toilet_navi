@@ -40,9 +40,30 @@ RSpec.describe "Toilet reviews", type: :request do
         }.to change { Review.count }.by(1)
 
         expect(response).to have_http_status(:created)
+
         json = JSON.parse(response.body)
         expect(json["rating"]).to eq(4)
         expect(json["comment"]).to eq("")
+
+        created_review = Review.order(:created_at).last
+        expect(created_review.toilet_id).to eq(toilet.id)
+        expect(created_review.user_id).to eq(user.id)
+      end
+
+      it "creates a review with comment" do
+        sign_in_as(user)
+
+        expect {
+          post "/toilets/#{toilet.id}/reviews",
+               params: { review: { rating: 5, comment: "とても使いやすい" } },
+               headers: auth_headers("ACCEPT" => "application/json")
+        }.to change { Review.count }.by(1)
+
+        expect(response).to have_http_status(:created)
+
+        json = JSON.parse(response.body)
+        expect(json["rating"]).to eq(5)
+        expect(json["comment"]).to eq("とても使いやすい")
       end
     end
 
@@ -57,7 +78,7 @@ RSpec.describe "Toilet reviews", type: :request do
     end
 
     context "when rating is invalid" do
-      it "returns 422" do
+      it "returns 422 and does not create a review" do
         sign_in_as(user)
 
         expect {
@@ -66,12 +87,15 @@ RSpec.describe "Toilet reviews", type: :request do
                headers: auth_headers("ACCEPT" => "application/json")
         }.not_to change { Review.count }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
+
+        json = JSON.parse(response.body)
+        expect(json).to be_a(Hash)
       end
     end
 
     context "when the same user already reviewed the toilet" do
-      it "returns 422" do
+      it "returns 422 and does not create another review" do
         sign_in_as(user)
         Review.create!(user: user, toilet: toilet, rating: 5, comment: "great")
 
@@ -81,7 +105,10 @@ RSpec.describe "Toilet reviews", type: :request do
                headers: auth_headers("ACCEPT" => "application/json")
         }.not_to change { Review.count }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
+
+        json = JSON.parse(response.body)
+        expect(json).to be_a(Hash)
       end
     end
   end
