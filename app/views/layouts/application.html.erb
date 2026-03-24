@@ -35,6 +35,7 @@
           <% if respond_to?(:authenticated?) && authenticated? %>
             <%= link_to "お気に入り", favorites_path, class: "site-nav__link" %>
             <span class="site-nav__link site-nav__link--disabled">通勤・通学ルート（準備中）</span>
+            <%= link_to "評価・投稿一覧", reviews_path, class: "site-nav__link" %>
             <span class="site-nav__link site-nav__link--disabled">評価・投稿一覧（準備中）</span>
             <span class="site-nav__link site-nav__link--disabled">マイページ（準備中）</span>
 
@@ -74,8 +75,9 @@
             <%= link_to "トイレを探す", search_path, class: "mobile-menu__link" %>
 
           <% if authenticated? %>
-            <%= link_to "お気に入り", favorites_path, class: "site-nav__link" %>
+            <%= link_to "お気に入り", favorites_path, class: "mobile-menu__link" %>
             <span class="mobile-menu__link mobile-menu__link--disabled">通勤・通学ルート（準備中）</span>
+            <%= link_to "評価・投稿一覧", reviews_path, class: "mobile-menu__link" %>
             <span class="mobile-menu__link mobile-menu__link--disabled">評価・投稿一覧（準備中）</span>
             <span class="mobile-menu__link mobile-menu__link--disabled">マイページ（準備中）</span>
 

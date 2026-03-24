@@ -1,0 +1,51 @@
+<h1 class="page-title">レビューを編集</h1>
+
+<div class="review-form-card">
+  <div class="review-form-card__toilet">
+    <div class="review-form-card__title"><%= @review.toilet.name %></div>
+
+    <% if @review.toilet.station %>
+      <div class="review-form-card__sub">
+        <%= @review.toilet.station.operator_name %> / <%= @review.toilet.station.name %>
+      </div>
+    <% end %>
+  </div>
+
+  <%= form_with model: @review, url: review_path(@review), method: :patch, local: true do |f| %>
+    <% if @review.errors.any? %>
+      <div class="form-errors">
+        <p class="form-errors__title">入力内容を確認してください</p>
+        <ul class="form-errors__list">
+          <% @review.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="form-group">
+      <%= f.label :rating, "評価", class: "form-label" %>
+      <div class="form-help">1が低め、5が高評価です。</div>
+      <%= f.select :rating,
+          options_for_select(1..5, @review.rating),
+          { include_blank: "選択してください" },
+          class: "form-select" %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :comment, class: "form-label" do %>
+        コメント <span class="form-label__optional">任意</span>
+      <% end %>
+      <div class="form-help">使いやすさや気づいたことがあれば入力してください。</div>
+      <%= f.text_area :comment,
+          rows: 5,
+          class: "form-textarea",
+          placeholder: "使いやすさや気づいたことがあれば入力してください" %>
+    </div>
+
+    <div class="review-form-actions">
+      <%= link_to "戻る", reviews_path, class: "btn btn--secondary" %>
+      <%= f.submit "レビューを更新する", class: "btn btn--primary" %>
+    </div>
+  <% end %>
+</div>

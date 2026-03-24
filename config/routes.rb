@@ -1,10 +1,11 @@
 Rails.application.routes.draw do
   resources :toilets, only: [ :index, :show ] do
-    resource :favorite, only: %i[create destroy]
+    resource :favorite, only: [ :create, :destroy ], controller: "toilet_favorites"
+    resources :reviews, only: [ :index, :new, :create ], controller: "toilet_reviews"
   end
 
   resources :favorites, only: [ :index ]
-
+  resources :reviews, only: [ :index, :edit, :update, :destroy ]
 
   get "email_confirmations/show"
   get "users/new"
@@ -18,7 +19,6 @@ Rails.application.routes.draw do
 
   get "/search", to: "search#new"
 
-  # サインアップ（追加）
   get  "/signup", to: "users#new"
   post "/signup", to: "users#create"
 
@@ -27,4 +27,6 @@ Rails.application.routes.draw do
 
   # メールアドレス確認（追加）
   get "/email/confirm", to: "email_confirmations#show", as: :email_confirmation
+
+  get "/mypage", to: "mypages#show", as: :mypage
 end

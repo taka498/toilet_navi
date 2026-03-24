@@ -56,5 +56,29 @@ RSpec.describe "Toilets JSON", type: :request do
       get "/favorites", headers: auth_headers
       expect(response.body).to include(toilet.name)
     end
+
+    it "includes reviews and review summary in show json" do
+      Review.create!(user: user, toilet: toilet, rating: 5, comment: "とても使いやすい")
+      Review.create!(
+        user: User.create!(
+          email_address: "another+#{SecureRandom.hex(4)}@example.com",
+          password: "password"
+        ),
+        toilet: toilet,
+        rating: 3,
+        comment: ""
+      )
+
+      get "/toilets/#{toilet.id}.json", headers: { "ACCEPT" => "application/json" }
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+
+      expect(json["review_summary"]["review_count"]).to eq(2)
+      expect(json["review_summary"]["average_rating"]).to eq(4.0)
+
+      expect(json["reviews"].size).to eq(2)
+      expect(json["reviews"].first).to include("rating", "comment", "created_at", "user")
+    end
   end
 end

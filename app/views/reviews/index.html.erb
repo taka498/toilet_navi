@@ -1,0 +1,61 @@
+<h1 class="page-title">評価・投稿一覧</h1>
+
+<% if @reviews.empty? %>
+  <div class="empty-state-card">
+    <div class="empty-state-card__title">まだレビューはありません</div>
+    <div class="empty-state-card__text">
+      トイレを探してレビューを投稿すると、あとから自分の投稿を見返せます。
+    </div>
+    <div class="empty-state-card__actions">
+      <%= link_to "トイレを探す", search_path, class: "btn btn--primary btn--sm" %>
+    </div>
+  </div>
+<% else %>
+  <ul class="reviews-list">
+    <% @reviews.each do |review| %>
+      <% toilet = review.toilet %>
+
+      <li class="reviews-item reviews-item--own">
+        <div class="reviews-item__header">
+          <div>
+            <div class="reviews-item__title">
+              <%= toilet.name %>
+            </div>
+
+            <% if toilet.station %>
+              <div class="reviews-item__sub">
+                <%= toilet.station.operator_name %> / <%= toilet.station.name %>
+              </div>
+            <% end %>
+
+            <div class="reviews-item__badge">あなたのレビュー</div>
+          </div>
+
+          <div class="reviews-item__rating">
+            ★ <%= review.rating %>
+          </div>
+        </div>
+
+        <div class="reviews-item__comment <%= "reviews-item__comment--empty" unless review.comment.present? %>"><%= review.comment.present? ? review.comment : "コメントなし" %></div>
+
+        <div class="reviews-item__meta">
+          投稿日: <%= review.created_at.strftime("%Y/%m/%d %H:%M") %>
+        </div>
+
+        <div class="reviews-item__actions">
+          <%= link_to "編集", edit_review_path(review), class: "btn btn--secondary btn--sm" %>
+          <%= button_to "削除", review_path(review), method: :delete, data: { confirm: "このレビューを削除しますか？" }, class: "btn btn--danger btn--sm" %>
+
+          <button
+            type="button"
+            class="btn btn--secondary btn--sm"
+            data-open-toilet-modal="true"
+            data-toilet-id="<%= review.toilet.id %>"
+          >
+            トイレを表示する
+          </button>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>

@@ -1,0 +1,110 @@
+<h1 class="page-title">レビュー一覧</h1>
+
+<% own_review = authenticated? ? current_user.reviews.find_by(toilet: @toilet) : nil %>
+
+<div class="toilet-reviews-summary">
+  <div class="toilet-reviews-summary__title"><%= @toilet.name %></div>
+
+  <% if @toilet.station %>
+    <div class="toilet-reviews-summary__sub">
+      <%= @toilet.station.operator_name %> / <%= @toilet.station.name %>
+    </div>
+  <% end %>
+
+  <div class="toilet-reviews-summary__meta">
+    <% if @average_rating.present? %>
+      <% rounded_average = @average_rating.round %>
+
+      <div class="review-summary-badges">
+        <span class="review-summary-badge review-summary-badge--rating">
+          <span class="review-summary-badge__label">平均評価</span>
+          <span class="review-stars" aria-label="平均評価 <%= @average_rating %> / 5">
+            <span class="review-stars__visual">
+              <%= "★" * rounded_average %><%= "☆" * (5 - rounded_average) %>
+            </span>
+            <span class="review-stars__score"><%= @average_rating %> / 5</span>
+          </span>
+        </span>
+
+        <span class="review-summary-badge review-summary-badge--count">
+          レビュー <%= @reviews.size %>件
+        </span>
+      </div>
+    <% else %>
+      <div class="review-summary-badges">
+        <span class="review-summary-badge review-summary-badge--rating">
+          平均評価 未評価
+        </span>
+
+        <span class="review-summary-badge review-summary-badge--count">
+          レビュー <%= @reviews.size %>件
+        </span>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<% if @reviews.empty? %>
+  <div class="empty-state-card">
+    <div class="empty-state-card__title">このトイレにはまだレビューがありません</div>
+    <div class="empty-state-card__text">
+      実際に利用した感想を投稿すると、他のユーザーの参考になります。
+    </div>
+
+    <div class="empty-state-card__actions">
+      <% if authenticated? %>
+        <% if own_review %>
+          <%= link_to "レビューを編集する", edit_review_path(own_review), class: "btn btn--primary btn--sm" %>
+        <% else %>
+          <%= link_to "最初のレビューを書く", new_toilet_review_path(@toilet), class: "btn btn--primary btn--sm" %>
+        <% end %>
+      <% else %>
+        <div class="empty-state-card__hint">
+          レビューを書くにはログインが必要です。
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% else %>
+  <ul class="reviews-list">
+    <% @reviews.each do |review| %>
+      <% own_review_item = authenticated? && review.user_id == current_user.id %>
+
+      <li class="reviews-item <%= "reviews-item--own" if own_review_item %>">
+        <div class="reviews-item__header">
+          <div>
+            <div class="reviews-item__title">
+              <%= review.user&.display_name.presence || "no name" %>
+            </div>
+
+            <% if own_review_item %>
+              <div class="reviews-item__badge">あなたのレビュー</div>
+            <% end %>
+          </div>
+
+          <div class="reviews-item__rating">
+            ★ <%= review.rating %>
+          </div>
+        </div>
+
+        <div class="reviews-item__comment <%= "reviews-item__comment--empty" unless review.comment.present? %>"><%= review.comment.presence || "コメントなし" %></div>
+
+        <div class="reviews-item__meta">
+          投稿日: <%= review.created_at.strftime("%Y/%m/%d %H:%M") %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% end %>
+
+<div class="toilet-reviews-actions">
+  <%= link_to "戻る", search_path, class: "btn btn--secondary btn--sm" %>
+
+  <% if authenticated? %>
+    <% if own_review %>
+      <%= link_to "レビューを編集する", edit_review_path(own_review), class: "btn btn--primary btn--sm" %>
+    <% else %>
+      <%= link_to "レビューを書く", new_toilet_review_path(@toilet), class: "btn btn--primary btn--sm" %>
+    <% end %>
+  <% end %>
+</div>

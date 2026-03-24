@@ -294,6 +294,12 @@ function escapeHtml(str) {
   });
 }
 
+function truncateText(text, maxLength = 48) {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength)}…`;
+}
+
 function markOrUnknown(value) {
   if (value === true) return "〇";
   if (value === false) return "×";
@@ -402,6 +408,7 @@ function openToiletModal(toilet) {
 
   const loggedIn = isLoggedIn();
   const favorited = toilet.favorited === true;
+  const currentUserReview = toilet.current_user_review;
 
   const wheelchair = toilet.is_wheelchair_accessible ? "〇" : "×";
   const ostomate   = toilet.is_ostomate_accessible ? "〇" : "×";
@@ -498,13 +505,34 @@ function openToiletModal(toilet) {
     </div>
 
     <div class="toilet-modal__section">
-      <div class="toilet-modal__sectionTitle">評価（将来）</div>
-      <div class="toilet-modal__placeholder">評価エリア（将来）</div>
-    </div>
+      <div class="toilet-modal__sectionTitle">レビュー</div>
 
-    <div class="toilet-modal__section">
-      <div class="toilet-modal__sectionTitle">コメント（将来）</div>
-      <div class="toilet-modal__placeholder">コメント表示（将来）</div>
+      ${buildReviewsHtml(toilet)}
+
+      ${
+        loggedIn
+          ? `<div class="toilet-modal__reviewActions">
+              ${
+                currentUserReview
+                  ? `<a href="/reviews/${currentUserReview.id}/edit"
+                        class="btn btn--secondary">
+                      レビューを編集する
+                    </a>`
+                  : `<a href="/toilets/${toilet.id}/reviews/new"
+                        class="btn btn--secondary">
+                      レビューを書く
+                    </a>`
+              }
+
+              <a href="/toilets/${toilet.id}/reviews"
+                class="btn btn--secondary">
+                レビュー一覧を見る
+              </a>
+            </div>`
+          : `<div class="toilet-modal__reviewActionHint">
+              レビューを書くにはログインしてください
+            </div>`
+      }
     </div>
 
     <button
@@ -522,6 +550,79 @@ function openToiletModal(toilet) {
   modal.setAttribute("aria-hidden", "false");
 
   document.body.classList.add("is-modal-open");
+}
+
+function buildReviewsHtml(toilet) {
+  const reviewSummary = toilet.review_summary || {};
+  const reviews = Array.isArray(toilet.reviews) ? toilet.reviews : [];
+  const currentUserReviewId = toilet.current_user_review?.id || null;
+
+  const averageRatingValue = reviewSummary.average_rating;
+  const reviewCount = reviewSummary.review_count || 0;
+
+  const summaryHtml = averageRatingValue == null
+    ? `
+      <div class="toilet-modal__reviewSummary">
+        <div class="review-summary-badges">
+          <span class="review-summary-badge review-summary-badge--rating">
+            平均評価 未評価
+          </span>
+          <span class="review-summary-badge review-summary-badge--count">
+            レビュー ${reviewCount}件
+          </span>
+        </div>
+      </div>
+    `
+    : `
+      <div class="toilet-modal__reviewSummary">
+        <div class="review-summary-badges">
+          <span class="review-summary-badge review-summary-badge--rating">
+            <span class="review-summary-badge__label">平均評価</span>
+            <span class="review-stars" aria-label="平均評価 ${escapeHtml(String(averageRatingValue))} / 5">
+              <span class="review-stars__visual">${"★".repeat(Math.round(Number(averageRatingValue)))}${"☆".repeat(5 - Math.round(Number(averageRatingValue)))}</span>
+              <span class="review-stars__score">${escapeHtml(String(averageRatingValue))} / 5</span>
+            </span>
+          </span>
+          <span class="review-summary-badge review-summary-badge--count">
+            レビュー ${reviewCount}件
+          </span>
+        </div>
+      </div>
+    `;
+
+  if (reviews.length === 0) {
+    return `
+      ${summaryHtml}
+      <div class="toilet-modal__placeholder">レビューはまだありません</div>
+    `;
+  }
+
+  const itemsHtml = reviews.map((review) => {
+    const displayName = review.user?.display_name || "no name";
+    const rawComment = review.comment?.trim() ? review.comment : "コメントなし";
+    const comment = truncateText(rawComment, 48);
+    const isOwnReview = currentUserReviewId && Number(review.id) === Number(currentUserReviewId);
+
+    return `
+      <div class="toilet-modal__reviewItem ${isOwnReview ? "reviews-item--own" : ""}">
+        <div class="toilet-modal__reviewHeader">
+          <div>
+            <span class="toilet-modal__reviewUser">${escapeHtml(displayName)}</span>
+            ${isOwnReview ? `<div class="reviews-item__badge">あなたのレビュー</div>` : ""}
+          </div>
+          <span class="toilet-modal__reviewRating">★${escapeHtml(String(review.rating))}</span>
+        </div>
+        <div class="toilet-modal__reviewComment toilet-modal__reviewComment--compact">${escapeHtml(comment)}</div>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    ${summaryHtml}
+    <div class="toilet-modal__reviewList">
+      ${itemsHtml}
+    </div>
+  `;
 }
 
 function setupToiletModalDelegationOnce() {
@@ -576,91 +677,102 @@ async function openToiletModalById(toiletId) {
 document.addEventListener("turbo:load", () => {
   setupGeolocationButton();
   setupToiletModalCloseEvents();
-  setupToiletModalDelegationOnce(); // ✅ 追加
+  setupToiletModalDelegationOnce();
+  setupOpenToiletModalDelegationOnce();
   setupFavoritesIndexBindings();
 });
 
+function setupOpenToiletModalDelegationOnce() {
+  if (document.documentElement.dataset.openToiletModalBound === "true") return;
+  document.documentElement.dataset.openToiletModalBound = "true";
+
+  document.addEventListener("click", async (e) => {
+    const openBtn = e.target.closest('[data-open-toilet-modal="true"]');
+    if (!openBtn) return;
+
+    const toiletId = openBtn.dataset.toiletId;
+    if (!toiletId) return;
+
+    if (openBtn.dataset.busy === "true") return;
+    openBtn.dataset.busy = "true";
+    openBtn.disabled = true;
+
+    try {
+      e.preventDefault();
+      await openToiletModalById(toiletId);
+    } finally {
+      openBtn.dataset.busy = "false";
+      openBtn.disabled = false;
+    }
+  });
+}
+
 function setupFavoritesIndexBindings() {
-  // favoritesページにいないなら何もしない（他ページに影響させない）
   const root = document.querySelector('[data-favorites-root="true"]');
   if (!root) return;
 
-  // Turbo再訪でも多重登録しない
   if (document.documentElement.dataset.favoritesIndexBound === "true") return;
   document.documentElement.dataset.favoritesIndexBound = "true";
 
   document.addEventListener("click", async (e) => {
-    // 1) トイレ名クリック → モーダルを開く
-    const openBtn = e.target.closest('[data-open-toilet-modal="true"]');
-    if (openBtn) {
-      const toiletId = openBtn.dataset.toiletId;
-      if (!toiletId) return;
-      e.preventDefault();
-      await openToiletModalById(toiletId);
-      return;
-    }
-
-    // 2) 解除クリック → DELETE → 行削除 → 同期イベント
     const unfavBtn = e.target.closest('[data-favorites-unfavorite="true"]');
-    if (unfavBtn) {
-      const toiletId = unfavBtn.dataset.toiletId;
-      if (!toiletId) return;
+    if (!unfavBtn) return;
 
-      unfavBtn.disabled = true;
+    const toiletId = unfavBtn.dataset.toiletId;
+    if (!toiletId) return;
 
-      try {
-        const res = await fetch(`/toilets/${toiletId}/favorite`, {
-          method: "DELETE",
-          credentials: "same-origin",
-          headers: {
-            "Accept": "application/json",
-            "X-CSRF-Token": csrfToken() || "",
-          },
-        });
+    unfavBtn.disabled = true;
 
-        if (res.status === 401) {
-          alert("ログインしてください");
-          window.location.href = "/session/new";
-          return;
-        }
+    try {
+      const res = await fetch(`/toilets/${toiletId}/favorite`, {
+        method: "DELETE",
+        credentials: "same-origin",
+        headers: {
+          "Accept": "application/json",
+          "X-CSRF-Token": csrfToken() || "",
+        },
+      });
 
-        if (!res.ok) {
-          alert("お気に入りの更新に失敗しました");
-          unfavBtn.disabled = false;
-          return;
-        }
-
-        const data = await res.json(); // { favorited: false } 想定
-
-        const nearestItem = unfavBtn.closest('[data-favorites-item="true"]');
-        if (nearestItem) {
-          nearestItem.remove();
-        } else {
-           // 2) 保険：rootの中からID一致で探して消す（空白なし・確実）
-          const selector = `[data-favorites-item="true"][data-toilet-id="${CSS.escape(String(toiletId))}"]`;
-          const item = root.querySelector(selector);
-          if (item) item.remove(); 
-        }
-
-        if (root.querySelectorAll('[data-favorites-item="true"]').length === 0) {
-          const container = root.parentElement; // ulの親（elseブロック内の領域）を想定
-          if (container) {
-            container.innerHTML = `
-              <p>お気に入りはまだありません。</p>
-              <a class="btn btn--primary" href="/search">トイレを探す</a>
-            `;
-          }
-        }
-
-        // モーダルや他UIへ同期通知
-        window.dispatchEvent(new CustomEvent("toilet:favorited-changed", {
-          detail: { toiletId: String(toiletId), favorited: Boolean(data.favorited) }
-        }));
-        } catch (err) {
-        console.error(err);
-        alert("通信エラーが発生しました");
-        unfavBtn.disabled = false;
+      if (res.status === 401) {
+        alert("ログインしてください");
+        window.location.href = "/session/new";
+        return;
       }
+
+      if (!res.ok) {
+        alert("お気に入りの更新に失敗しました");
+        unfavBtn.disabled = false;
+        return;
+      }
+
+      const data = await res.json();
+
+      const nearestItem = unfavBtn.closest('[data-favorites-item="true"]');
+      if (nearestItem) {
+        nearestItem.remove();
+      } else {
+        const selector = `[data-favorites-item="true"][data-toilet-id="${CSS.escape(String(toiletId))}"]`;
+        const item = root.querySelector(selector);
+        if (item) item.remove();
+      }
+
+      if (root.querySelectorAll('[data-favorites-item="true"]').length === 0) {
+        const container = root.parentElement;
+        if (container) {
+          container.innerHTML = `
+            <p>お気に入りはまだありません。</p>
+            <a class="btn btn--primary" href="/search">トイレを探す</a>
+          `;
+        }
+      }
+
+      window.dispatchEvent(new CustomEvent("toilet:favorited-changed", {
+        detail: { toiletId: String(toiletId), favorited: Boolean(data.favorited) }
+      }));
+    } catch (err) {
+      console.error(err);
+      alert("通信エラーが発生しました");
+      unfavBtn.disabled = false;
     }
   });
 }
