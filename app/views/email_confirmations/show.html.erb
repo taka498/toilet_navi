@@ -1,2 +1,17 @@
-<h1>EmailConfirmations#show</h1>
-<p>Find me in app/views/email_confirmations/show.html.erb</p>
+<h1 class="page-title">メール確認が完了しました</h1>
+
+<div class="review-form-card">
+  <div class="review-form-card__title">ログインが完了しました</div>
+  <div class="review-form-card__sub">
+    そのままToilet Naviを利用できます。
+  </div>
+
+  <div class="form-help">
+    まずは近くのトイレを探してみましょう。
+  </div>
+
+  <div class="review-form-actions">
+    <%= link_to "トイレを探す", search_path, class: "btn btn--primary" %>
+    <%= link_to "評価・投稿一覧を見る", reviews_path, class: "btn btn--secondary" %>
+  </div>
+</div>

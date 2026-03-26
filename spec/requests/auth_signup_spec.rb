@@ -6,7 +6,7 @@ RSpec.describe "Signup", type: :request do
     expect(response).to have_http_status(:ok)
   end
 
-  it "ユーザー登録できる（確認メール送信→ログイン画面へ）" do
+  it "ユーザー登録できる（確認メール送信後、メール確認に進める）" do
     expect {
       post "/signup", params: {
         user: {

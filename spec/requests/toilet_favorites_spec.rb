@@ -83,6 +83,27 @@ RSpec.describe "Toilet favorites", type: :request do
       end
     end
 
+    context "when another user's favorite exists" do
+      it "does not affect another user's favorite" do
+        other_user = User.create!(
+          email_address: "other+#{SecureRandom.hex(6)}@example.com",
+          password_digest: BCrypt::Password.create("password")
+        )
+
+        Favorite.create!(user: other_user, toilet: toilet)
+
+        sign_in_as(user)
+
+        expect {
+          delete "/toilets/#{toilet.id}/favorite", headers: auth_headers("ACCEPT" => "application/json")
+        }.not_to change { Favorite.where(user: other_user, toilet: toilet).count }
+
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json["favorited"]).to eq(false)
+      end
+    end
+
     context "when favorite does not exist" do
       it "returns ok and favorited: false (idempotent)" do
         sign_in_as(user)
