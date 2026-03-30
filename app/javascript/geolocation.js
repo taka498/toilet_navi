@@ -37,6 +37,59 @@ function buildFacilityIconsHtml(toilet) {
     .join("");
 }
 
+function buildToiletFilterParams() {
+  const params = new URLSearchParams();
+
+  const multipurpose = document.getElementById("filter-multipurpose");
+  const wheelchairAccessible = document.getElementById("filter-wheelchair-accessible");
+  const babyFriendly = document.getElementById("filter-baby-friendly");
+  const ostomateAccessible = document.getElementById("filter-ostomate-accessible");
+  const washlet = document.getElementById("filter-washlet");
+  const styleType = document.getElementById("filter-style-type");
+
+  if (multipurpose?.checked) {
+    params.set("multipurpose", "1");
+  }
+
+  if (wheelchairAccessible?.checked) {
+    params.set("wheelchair_accessible", "1");
+  }
+
+  if (babyFriendly?.checked) {
+    params.set("baby_friendly", "1");
+  }
+
+  if (ostomateAccessible?.checked) {
+    params.set("ostomate_accessible", "1");
+  }
+
+  if (washlet?.checked) {
+    params.set("washlet", "1");
+  }
+
+  if (styleType?.value) {
+    params.set("style_type", styleType.value);
+  }
+
+  return params;
+}
+
+function getDistanceFilterValue() {
+  const distanceFilter = document.getElementById("filter-distance");
+  if (!distanceFilter) return null;
+
+  const value = distanceFilter.value;
+  if (!value) return null;
+
+  return Number(value);
+}
+
+function filterToiletsByDistance(toilets) {
+  const maxDistance = getDistanceFilterValue();
+  if (!Number.isFinite(maxDistance)) return toilets;
+
+  return toilets.filter((toilet) => toilet.distance_in_meters <= maxDistance);
+}
 
 async function setupGeolocationButton() {
   const button = document.getElementById("get-location");
@@ -45,47 +98,21 @@ async function setupGeolocationButton() {
 
   if (!button || !result || !mapElement) return;
 
-  // ✅ Turbo再訪で多重登録されないように
   if (button.dataset.geolocationBound === "true") return;
   button.dataset.geolocationBound = "true";
 
   const apiKey = mapElement.dataset.mapApiKeyValue;
 
   async function fetchToilets() {
-    const res = await fetch("/toilets.json", { credentials: "same-origin" });
+    const params = buildToiletFilterParams();
+    const url = params.toString().length > 0 ? `/toilets.json?${params.toString()}` : "/toilets.json";
+
+    const res = await fetch(url, { credentials: "same-origin" });
     if (!res.ok) throw new Error(`Failed to fetch toilets: ${res.status}`);
     return await res.json();
   }
 
-  let toilets = [];
-  try {
-    toilets = await fetchToilets();
-  } catch (e) {
-    toilets = [];
-    clearToiletList();
-    showErrorStatus("データの読み込みに失敗しました。ページを再読み込みしてください。");
-  }
-
-  const modalClose = document.getElementById("toilet-modal-close");
-  const modalBackdrop = document.getElementById("toilet-modal-backdrop");
-
-  if (modalClose && modalClose.dataset.bound !== "true") {
-    modalClose.dataset.bound = "true";
-    modalClose.addEventListener("click", closeToiletModal);
-  }
-  if (modalBackdrop && modalBackdrop.dataset.bound !== "true") {
-    modalBackdrop.dataset.bound = "true";
-    modalBackdrop.addEventListener("click", closeToiletModal);
-  }
-
-  if (document.documentElement.dataset.toiletModalEscBound !== "true") {
-    document.documentElement.dataset.toiletModalEscBound = "true";
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeToiletModal();
-    });
-  }
-
-  function startGeolocation() {
+  async function startGeolocation() {
     result.textContent = "";
     hideStatus();
 
@@ -97,7 +124,7 @@ async function setupGeolocationButton() {
     showLoadingStatus("現在地を取得しています...");
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      async (position) => {
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
         const accuracy = position.coords.accuracy;
@@ -105,8 +132,32 @@ async function setupGeolocationButton() {
         result.textContent =
           `lat=${lat.toFixed(6)}, lng=${lng.toFixed(6)}（精度: 約${Math.round(accuracy)}m）`;
 
-        
-        loadGoogleMap(apiKey, lat, lng, toilets);
+        try {
+          const toilets = await fetchToilets();
+
+          const sortedToilets = toilets
+            .map((toilet) => {
+              const distanceInMeters = calculateDistanceInMeters(
+                lat,
+                lng,
+                Number(toilet.latitude),
+                Number(toilet.longitude)
+              );
+
+              return {
+                ...toilet,
+                distance_in_meters: distanceInMeters
+              };
+            })
+            .sort((a, b) => a.distance_in_meters - b.distance_in_meters);
+
+          const visibleToilets = filterToiletsByDistance(sortedToilets);
+
+          loadGoogleMap(apiKey, lat, lng, visibleToilets);
+        } catch (e) {
+          clearToiletList();
+          showErrorStatus("データの読み込みに失敗しました。ページを再読み込みしてください。");
+        }
       },
       (error) => {
         hideStatus();
@@ -121,10 +172,33 @@ async function setupGeolocationButton() {
     );
   }
 
+  function bindSearchFilters() {
+    const filterIds = [
+      "filter-distance",
+      "filter-style-type",
+      "filter-multipurpose",
+      "filter-wheelchair-accessible",
+      "filter-baby-friendly",
+      "filter-ostomate-accessible",
+      "filter-washlet"
+    ];
+
+    filterIds.forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound === "true") return;
+
+      el.dataset.bound = "true";
+      el.addEventListener("change", () => {
+        startGeolocation();
+      });
+    });
+  }
+
   button.addEventListener("click", () => {
     startGeolocation();
   });
 
+  bindSearchFilters();
   startGeolocation();
 }
 
@@ -292,6 +366,35 @@ function escapeHtml(str) {
     const map = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
     return map[s];
   });
+}
+
+function calculateDistanceInMeters(lat1, lng1, lat2, lng2) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const earthRadius = 6371000;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return Math.round(earthRadius * c);
+}
+
+function formatDistance(distanceInMeters) {
+  if (!Number.isFinite(distanceInMeters)) return "";
+
+  if (distanceInMeters < 1000) {
+    return `約${distanceInMeters}m`;
+  }
+
+  return `約${(distanceInMeters / 1000).toFixed(1)}km`;
 }
 
 function truncateText(text, maxLength = 48) {

@@ -1,6 +1,57 @@
 <div class="search-toolbar">
   <p id="location-result" hidden></p>
+
+  <details class="search-filters">
+    <summary class="search-filters__summary">設備条件で絞り込む</summary>
+
+    <div class="search-filters__body">
+      <label class="search-filters__option search-filters__option--stack">
+        <span>距離条件</span>
+        <select id="filter-distance" class="search-filters__select">
+          <option value="">制限なし</option>
+          <option value="500">500m以内</option>
+          <option value="1000">1000m以内</option>
+        </select>
+      </label>
+
+      <label class="search-filters__option search-filters__option--stack">
+        <span>便器タイプ</span>
+        <select id="filter-style-type" class="search-filters__select">
+          <option value="">指定なし</option>
+          <option value="japanese">和式</option>
+          <option value="western">洋式</option>
+          <option value="both">併設</option>
+        </select>
+      </label>
+
+      <label class="search-filters__option">
+        <input type="checkbox" id="filter-ostomate-accessible">
+        オストメイト対応
+      </label>
+
+      <label class="search-filters__option">
+        <input type="checkbox" id="filter-washlet">
+        ウォシュレット
+      </label>
+
+      <label class="search-filters__option">
+        <input type="checkbox" id="filter-multipurpose">
+        多目的トイレ
+      </label>
+
+      <label class="search-filters__option">
+        <input type="checkbox" id="filter-wheelchair-accessible">
+        車いす対応
+      </label>
+
+      <label class="search-filters__option">
+        <input type="checkbox" id="filter-baby-friendly">
+        ベビー対応
+      </label>
+    </div>
+  </details>
 </div>
+
 <div
   id="map"
   data-is-logged-in-value="false"

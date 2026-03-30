@@ -5,6 +5,8 @@ class ToiletsController < ApplicationController
 
   def index
     toilets = Toilet.includes(:station).order(:id)
+    toilets = filter_toilets(toilets)
+
     render json: build_payload(toilets), status: :ok
   end
 
@@ -15,6 +17,20 @@ class ToiletsController < ApplicationController
   end
 
   private
+
+  def filter_toilets(toilets)
+    toilets = toilets.where(is_multipurpose: true) if truthy_param?(params[:multipurpose])
+    toilets = toilets.where(is_wheelchair_accessible: true) if truthy_param?(params[:wheelchair_accessible])
+    toilets = toilets.where(is_baby_friendly: true) if truthy_param?(params[:baby_friendly])
+    toilets = toilets.where(is_ostomate_accessible: true) if truthy_param?(params[:ostomate_accessible])
+    toilets = toilets.where(has_washlet: true) if truthy_param?(params[:washlet])
+    toilets = toilets.where(style_type: params[:style_type]) if params[:style_type].present?
+    toilets
+  end
+
+  def truthy_param?(value)
+    value == "1" || value == "true"
+  end
 
   def build_payload(toilets)
     favorited_ids =
