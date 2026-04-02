@@ -2,7 +2,10 @@
   <p id="location-result" hidden></p>
 
   <details class="search-filters">
-    <summary class="search-filters__summary">設備条件で絞り込む</summary>
+    <summary class="search-filters__summary">
+      設備条件で絞り込む
+      <span id="active-filter-count" class="search-filters__count" hidden></span>
+    </summary>
 
     <div class="search-filters__body">
       <label class="search-filters__option search-filters__option--stack">
@@ -48,6 +51,12 @@
         <input type="checkbox" id="filter-baby-friendly">
         ベビー対応
       </label>
+  
+      <div class="search-filters__actions">
+        <button type="button" id="clear-search-filters" class="btn btn--secondary btn--sm">
+          条件をクリア
+        </button>
+      </div>
     </div>
   </details>
 </div>

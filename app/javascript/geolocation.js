@@ -74,6 +74,64 @@ function buildToiletFilterParams() {
   return params;
 }
 
+function countActiveFilters() {
+  let count = 0;
+
+  const distanceFilter = document.getElementById("filter-distance");
+  const styleTypeFilter = document.getElementById("filter-style-type");
+  const multipurpose = document.getElementById("filter-multipurpose");
+  const wheelchairAccessible = document.getElementById("filter-wheelchair-accessible");
+  const babyFriendly = document.getElementById("filter-baby-friendly");
+  const ostomateAccessible = document.getElementById("filter-ostomate-accessible");
+  const washlet = document.getElementById("filter-washlet");
+
+  if (distanceFilter?.value) count += 1;
+  if (styleTypeFilter?.value) count += 1;
+  if (multipurpose?.checked) count += 1;
+  if (wheelchairAccessible?.checked) count += 1;
+  if (babyFriendly?.checked) count += 1;
+  if (ostomateAccessible?.checked) count += 1;
+  if (washlet?.checked) count += 1;
+
+  return count;
+}
+
+function updateActiveFilterCount() {
+  const countEl = document.getElementById("active-filter-count");
+  if (!countEl) return;
+
+  const count = countActiveFilters();
+
+  if (count === 0) {
+    countEl.hidden = true;
+    countEl.textContent = "";
+    return;
+  }
+
+  countEl.hidden = false;
+  countEl.textContent = `（${count}件適用中）`;
+}
+
+function clearSearchFilters() {
+  const distanceFilter = document.getElementById("filter-distance");
+  const styleTypeFilter = document.getElementById("filter-style-type");
+  const multipurpose = document.getElementById("filter-multipurpose");
+  const wheelchairAccessible = document.getElementById("filter-wheelchair-accessible");
+  const babyFriendly = document.getElementById("filter-baby-friendly");
+  const ostomateAccessible = document.getElementById("filter-ostomate-accessible");
+  const washlet = document.getElementById("filter-washlet");
+
+  if (distanceFilter) distanceFilter.value = "";
+  if (styleTypeFilter) styleTypeFilter.value = "";
+  if (multipurpose) multipurpose.checked = false;
+  if (wheelchairAccessible) wheelchairAccessible.checked = false;
+  if (babyFriendly) babyFriendly.checked = false;
+  if (ostomateAccessible) ostomateAccessible.checked = false;
+  if (washlet) washlet.checked = false;
+
+  updateActiveFilterCount();
+}
+
 function getDistanceFilterValue() {
   const distanceFilter = document.getElementById("filter-distance");
   if (!distanceFilter) return null;
@@ -189,8 +247,20 @@ async function setupGeolocationButton() {
 
       el.dataset.bound = "true";
       el.addEventListener("change", () => {
+        updateActiveFilterCount();
         startGeolocation();
       });
+    });
+  }
+
+  function bindClearFiltersButton() {
+    const clearButton = document.getElementById("clear-search-filters");
+    if (!clearButton || clearButton.dataset.bound === "true") return;
+
+    clearButton.dataset.bound = "true";
+    clearButton.addEventListener("click", () => {
+      clearSearchFilters();
+      startGeolocation();
     });
   }
 
@@ -199,6 +269,8 @@ async function setupGeolocationButton() {
   });
 
   bindSearchFilters();
+  bindClearFiltersButton();
+  updateActiveFilterCount();
   startGeolocation();
 }
 
