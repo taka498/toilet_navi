@@ -268,6 +268,66 @@
   border-radius: 10px;
 }
 
+.search-filters {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.search-filters__summary {
+  padding: 10px 12px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.search-filters__summary::-webkit-details-marker {
+  display: none;
+}
+
+.search-filters__body {
+  padding: 0 12px 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.search-filters__option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.search-filters__option--stack {
+  display: grid;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.search-filters__select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.search-filters__count {
+  margin-left: 6px;
+  font-size: 12px;
+  color: #666;
+  font-weight: 400;
+}
+
+.search-filters__actions {
+  margin-top: 4px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* --- トイレ一覧 --- */
 #toilet-list {
   margin-top: 12px;
