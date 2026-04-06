@@ -10,6 +10,29 @@
 
     <%= yield :head %>
 
+    <%
+      app_host = ENV.fetch("APP_HOST", "localhost:3000")
+      app_scheme = Rails.env.production? ? "https" : "http"
+      current_url = "#{app_scheme}://#{app_host}#{request.fullpath}"
+      og_title = content_for(:title) || "Toilet Navi"
+      og_description = content_for(:og_description) || "現在地から近いトイレを地図で探し、設備条件で絞り込めるトイレ検索サービスです。"
+      og_image = "#{app_scheme}://#{app_host}/ogp.png"
+    %>
+
+    <meta property="og:title" content="<%= og_title %>">
+    <meta property="og:description" content="<%= og_description %>">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="<%= current_url %>">
+    <meta property="og:image" content="<%= og_image %>">
+    <meta property="og:image:alt" content="Toilet Navi のサービス紹介画像">
+    <meta property="og:site_name" content="Toilet Navi">
+    <meta property="og:locale" content="ja_JP">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= og_title %>">
+    <meta name="twitter:description" content="<%= og_description %>">
+    <meta name="twitter:image" content="<%= og_image %>">
+
     <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
