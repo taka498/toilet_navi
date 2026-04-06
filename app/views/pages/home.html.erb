@@ -30,3 +30,37 @@
     </div>
   <% end %>
 </section>
+
+<% unless authenticated? %>
+  <section class="guide-section">
+    <h2 class="guide-section__title">使い方</h2>
+
+    <div class="guide-card">
+      <h3 class="guide-card__title">1. 現在地から近くのトイレを探す</h3>
+      <p class="guide-card__text">
+        検索画面で現在地を取得すると、近くのトイレ候補を地図と一覧で確認できます。
+      </p>
+    </div>
+
+    <div class="guide-card">
+      <h3 class="guide-card__title">2. 条件に合わせて絞り込む</h3>
+      <p class="guide-card__text">
+        多目的トイレ、車いす対応、ベビー対応、オストメイト対応、ウォシュレット、便器タイプ、距離条件で絞り込めます。
+      </p>
+    </div>
+
+    <div class="guide-card">
+      <h3 class="guide-card__title">3. 詳細を見て案内を開始する</h3>
+      <p class="guide-card__text">
+        詳細画面では設備情報やレビューを確認でき、Googleマップで案内を開始できます。
+      </p>
+    </div>
+
+    <div class="guide-card">
+      <h3 class="guide-card__title">4. ログインするともっと便利に使える</h3>
+      <p class="guide-card__text">
+        お気に入り登録やレビュー投稿ができるようになり、自分の使ったトイレ情報を見返せます。
+      </p>
+    </div>
+  </section>
+<% end %>
