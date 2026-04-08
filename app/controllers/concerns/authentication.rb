@@ -29,8 +29,11 @@ module Authentication
 
       respond_to do |format|
         format.json { head :unauthorized }
-        format.html { redirect_to new_session_path, alert: "ログインが必要です" }
-        format.any  { head :unauthorized }
+        format.html do
+          request_authentication
+          flash[:alert] = "ログインが必要です"
+        end
+        format.any { head :unauthorized }
       end
     end
 

@@ -1343,3 +1343,22 @@ body.is-modal-open .toilet-modal__backdrop {
   color: #444;
   line-height: 1.7;
 }
+
+.mypage-card {
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #fff;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.mypage-card__text {
+  margin: 0;
+  color: #444;
+  line-height: 1.7;
+}
+
+.mypage-menu {
+  display: grid;
+  gap: 12px;
+}
