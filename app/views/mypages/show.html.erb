@@ -1,6 +1,13 @@
 <h1 class="page-title">マイページ</h1>
 
+<div class="mypage-card">
+  <p class="mypage-card__text">
+    お気に入りや自分のレビューを、ここからまとめて確認できます。
+  </p>
+</div>
+
 <div class="mypage-menu">
   <%= link_to "お気に入り一覧", favorites_path, class: "btn btn--primary btn--block" %>
-  <%= link_to "レビュー一覧", reviews_path, class: "btn btn--secondary btn--block" %>
+  <%= link_to "評価・投稿一覧", reviews_path, class: "btn btn--secondary btn--block" %>
+  <%= link_to "トイレを探す", search_path, class: "btn btn--secondary btn--block" %>
 </div>
