@@ -58,6 +58,14 @@ RSpec.describe "Toilet reviews index", type: :request do
     Review.create!(user: user2, toilet: toilet2, rating: 4, comment: "別のトイレ")
   end
 
+  before do
+    review1.image.attach(
+      io: Rails.root.join("spec/fixtures/files/review_image.png").open,
+      filename: "review_image.png",
+      content_type: "image/png"
+    )
+  end
+
   describe "GET /toilets/:toilet_id/reviews" do
     it "shows only reviews for the selected toilet" do
       get "/toilets/#{toilet1.id}/reviews", headers: { "ACCEPT" => "text/html" }
@@ -97,6 +105,13 @@ RSpec.describe "Toilet reviews index", type: :request do
       expect(response.body).to include("平均評価 未評価")
       expect(response.body).to include("レビュー 0件")
       expect(response.body).to include("このトイレにはまだレビューがありません")
+    end
+
+    it "shows an attached image in the toilet reviews list" do
+      get "/toilets/#{toilet1.id}/reviews", headers: { "ACCEPT" => "text/html" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("review_image.png")
     end
   end
 end

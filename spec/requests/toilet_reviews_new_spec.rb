@@ -101,6 +101,58 @@ RSpec.describe "Toilet reviews new", type: :request do
         expect(response.body).to include("入力内容を確認してください")
         expect(response.body).to include("Toilet A")
       end
+
+      it "creates a review with an image" do
+        sign_in_as(user)
+
+        image_file = fixture_file_upload(
+          Rails.root.join("spec/fixtures/files/review_image.png"),
+          "image/png"
+        )
+
+        expect {
+          post "/toilets/#{toilet.id}/reviews",
+              params: {
+                review: {
+                  rating: 4,
+                  comment: "画像付きレビュー",
+                  image: image_file
+                }
+              },
+              headers: auth_headers("ACCEPT" => "text/html")
+        }.to change { Review.count }.by(1)
+
+        expect(response).to have_http_status(:found)
+        expect(response).to redirect_to(reviews_path)
+
+        created_review = Review.order(:created_at).last
+        expect(created_review.image).to be_attached
+      end
+
+      it "re-renders the form when a non-image file is attached" do
+        sign_in_as(user)
+
+        invalid_file = fixture_file_upload(
+          Rails.root.join("spec/fixtures/files/not_image.txt"),
+          "text/plain"
+        )
+
+        expect {
+          post "/toilets/#{toilet.id}/reviews",
+              params: {
+                review: {
+                  rating: 4,
+                  comment: "画像ではないファイル",
+                  image: invalid_file
+                }
+              },
+              headers: auth_headers("ACCEPT" => "text/html")
+        }.not_to change { Review.count }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("入力内容を確認してください")
+        expect(response.body).to include("画像")
+      end
     end
   end
 end
