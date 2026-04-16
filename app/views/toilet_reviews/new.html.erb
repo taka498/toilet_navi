@@ -40,6 +40,16 @@
       <%= f.text_area :comment, class: "form-textarea", rows: 5, placeholder: "例: 改札内の端の方にありました。比較的見つけやすかったです。" %>
     </div>
 
+    <div class="form-group">
+      <%= f.label :image, class: "form-label" do %>
+        画像 <span class="form-label__optional">任意</span>
+      <% end %>
+      <div class="form-help">PNG / JPG / WEBP、5MB以下の画像を添付できます。</div>
+      <%= f.file_field :image,
+          accept: "image/png,image/jpeg,image/jpg,image/webp",
+          class: "form-file" %>
+    </div>
+
     <div class="review-form-actions">
       <%= link_to "戻る", toilet_reviews_path(@toilet), class: "btn btn--secondary" %>
       <%= f.submit "レビューを投稿する", class: "btn btn--primary" %>

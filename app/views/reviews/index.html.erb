@@ -38,6 +38,12 @@
 
         <div class="reviews-item__comment <%= "reviews-item__comment--empty" unless review.comment.present? %>"><%= review.comment.present? ? review.comment : "コメントなし" %></div>
 
+        <% if review.image.attached? %>
+          <div class="reviews-item__image">
+            <%= image_tag review.image, alt: "レビュー画像", class: "reviews-item__thumb" %>
+          </div>
+        <% end %>
+
         <div class="reviews-item__meta">
           投稿日: <%= review.created_at.strftime("%Y/%m/%d %H:%M") %>
         </div>

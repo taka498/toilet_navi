@@ -1362,3 +1362,20 @@ body.is-modal-open .toilet-modal__backdrop {
   display: grid;
   gap: 12px;
 }
+
+.form-file {
+  width: 100%;
+  font-size: 14px;
+}
+
+.reviews-item__image {
+  margin-top: 12px;
+}
+
+.reviews-item__thumb {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+}

@@ -52,6 +52,14 @@ RSpec.describe "Reviews index", type: :request do
     Review.create!(user: user2, toilet: toilet2, rating: 3, comment: "普通")
   end
 
+  before do
+    review1.image.attach(
+      io: Rails.root.join("spec/fixtures/files/review_image.png").open,
+      filename: "review_image.png",
+      content_type: "image/png"
+    )
+  end
+
   describe "GET /reviews" do
     context "when logged in" do
       it "shows only current user's reviews" do
@@ -64,6 +72,15 @@ RSpec.describe "Reviews index", type: :request do
         expect(response.body).to include("とても良い")
         expect(response.body).not_to include("Toilet 2")
         expect(response.body).not_to include("普通")
+      end
+
+      it "shows an attached image in the current user's reviews list" do
+        sign_in_as(user1)
+
+        get "/reviews", headers: auth_headers("ACCEPT" => "text/html")
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("review_image.png")
       end
     end
 
