@@ -36,18 +36,25 @@
         コメント <span class="form-label__optional">任意</span>
       <% end %>
       <%= f.text_area :comment,
-          rows: 5,
           class: "form-textarea",
-          placeholder: "使いやすさや気づいたことがあれば入力してください" %>
+          rows: 5,
+          placeholder: "例: 改札内の端の方にありました。比較的見つけやすかったです。" %>
     </div>
 
     <div class="form-group">
       <%= f.label :image, class: "form-label" do %>
         画像 <span class="form-label__optional">任意</span>
       <% end %>
+
       <%= f.file_field :image,
           accept: "image/png,image/jpeg,image/jpg,image/webp",
           class: "form-file" %>
+
+      <div class="form-note-box">
+        <p class="form-note-box__limit">※ PNG / JPG / WEBP、5MB以下</p>
+        <p class="form-note">コメント: 個人情報や誹謗中傷は避けてください。</p>
+        <p class="form-note">画像: 設備の参考になるもののみ添付してください。</p>
+      </div>
     </div>
 
     <div class="review-form-actions">
