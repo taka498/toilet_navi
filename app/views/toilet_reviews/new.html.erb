@@ -24,6 +24,15 @@
     <% end %>
 
     <div class="form-group">
+      <%= f.label :rating, "評価", class: "form-label" %>
+      <div class="form-help">1が低め、5が高評価です。</div>
+      <%= f.select :rating,
+          options_for_select(1..5, @review.rating),
+          { include_blank: "選択してください" },
+          class: "form-select" %>
+    </div>
+
+    <div class="form-group">
       <%= f.label :comment, class: "form-label" do %>
         コメント <span class="form-label__optional">任意</span>
       <% end %>
