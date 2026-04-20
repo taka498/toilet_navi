@@ -56,4 +56,15 @@ RSpec.describe Review, type: :model do
     expect(review).not_to be_valid
     expect(review.errors[:comment]).to be_present
   end
+
+  it "is invalid when comment includes ng words" do
+    review = Review.new(user: user, toilet: toilet, rating: 3, comment: "このトイレはばか")
+    expect(review).not_to be_valid
+    expect(review.errors[:comment]).to include("に不適切な表現が含まれています")
+  end
+
+  it "is valid when comment does not include ng words" do
+    review = Review.new(user: user, toilet: toilet, rating: 3, comment: "清掃されていて使いやすかったです")
+    expect(review).to be_valid
+  end
 end
