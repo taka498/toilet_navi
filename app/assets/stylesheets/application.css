@@ -1412,3 +1412,27 @@ body.is-modal-open .toilet-modal__backdrop {
   font-size: 0.9rem;
   color: #555;
 }
+
+.static-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+}
+
+.static-page__section + .static-page__section {
+  margin-top: 24px;
+}
+
+.static-page__section h2 {
+  margin-bottom: 8px;
+  font-size: 1.1rem;
+}
+
+.static-page__section p,
+.static-page__section li {
+  line-height: 1.8;
+}
+
+.static-page__section ul {
+  padding-left: 20px;
+}
