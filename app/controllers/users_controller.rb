@@ -9,12 +9,12 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
-      Rails.logger.info("[signup] user_id=#{@user.id} email=#{@user.email_address} token=#{@user.email_confirmation_token.inspect}")
+      @user.update_column(:email_confirmed_at, Time.current)
+      start_new_session_for(@user)
 
-      UserMailer.email_confirmation(@user).deliver_now
-
-      redirect_to new_session_path, notice: "確認メールを送信しました。メール内リンクから確認してください。"
+      redirect_to after_authentication_url, notice: "ユーザー登録が完了しました。"
     else
+      flash.now[:alert] = "登録できませんでした。入力内容をご確認ください。"
       render :new, status: :unprocessable_entity
     end
   end
