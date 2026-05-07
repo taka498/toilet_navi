@@ -11,6 +11,7 @@ class User < ApplicationRecord
   normalizes :email_address, with: ->(e) { e.strip.downcase }
   before_create :set_email_confirmation_token
 
+  validates :email_address, presence: true, uniqueness: true
   validates :display_name, length: { maximum: 30 }, allow_blank: true
 
   def email_confirmed?
